@@ -1,0 +1,110 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+send - Send message directly to Claude instance pane via WezTerm
+
+Usage:
+    send <instance> <message>
+
+Examples:
+    send ui "Design a login page"
+    send coder "Implement this feature"
+"""
+
+import sys
+import json
+import subprocess
+import os
+from pathlib import Path
+
+script_dir = Path(__file__).resolve().parent
+project_root = script_dir.parent
+
+def load_config():
+    """从pane_mapping.json读取实际pane ID映射"""
+    # 从当前工作目录读取配置（用户所在的项目目录）
+    work_dir = Path.cwd()
+    
+    # 优先读取pane映射文件
+    mapping_file = work_dir / ".ccb_config" / "pane_mapping.json"
+    if mapping_file.exists():
+        try:
+            with open(mapping_file, 'r', encoding='utf-8') as f:
+                mapping = json.load(f)
+            return {k.lower(): str(v) for k, v in mapping.items()}
+        except Exception:
+            pass
+    
+    # 降级方案：从ccb.config读取顺序映射
+    config_paths = [
+        work_dir / ".ccb_config" / "ccb.config",
+        work_dir / "ccb.config",
+        Path.home() / ".ccb" / "ccb.config",
+    ]
+    
+    for config_file in config_paths:
+        if config_file.exists():
+            try:
+                with open(config_file, 'r', encoding='utf-8') as f:
+                    config = json.load(f)
+                instances = config.get("claude", {}).get("instances", [])
+                role_map = {}
+                for idx, inst in enumerate(instances):
+                    role_id = inst.get("id", "")
+                    if role_id:
+                        role_map[role_id.lower()] = str(idx)
+                return role_map
+            except Exception:
+                continue
+    
+    return {}
+
+def main():
+    if len(sys.argv) < 3:
+        print("Usage: send <instance> <message>", file=sys.stderr)
+        print("Examples:", file=sys.stderr)
+        print("  send ui 'Design a login page'", file=sys.stderr)
+        print("  send coder 'Implement this feature'", file=sys.stderr)
+        return 1
+    
+    instance = sys.argv[1].lower()
+    message = " ".join(sys.argv[2:])
+    
+    role_map = load_config()
+    
+    if not role_map:
+        print("Error: Could not load instance configuration", file=sys.stderr)
+        return 1
+    
+    if instance not in role_map:
+        print(f"Error: Unknown instance '{instance}'", file=sys.stderr)
+        print(f"Available: {', '.join(role_map.keys())}", file=sys.stderr)
+        return 1
+    
+    pane_id = role_map[instance]
+    
+    try:
+        # 发送消息
+        subprocess.run(
+            ["wezterm", "cli", "send-text", "--pane-id", pane_id, "--no-paste", message],
+            check=True,
+            capture_output=True
+        )
+        # 发送回车
+        subprocess.run(
+            ["wezterm", "cli", "send-text", "--pane-id", pane_id, "--no-paste"],
+            input=b"\r",
+            check=True,
+            capture_output=True
+        )
+        print(f"[OK] Sent to {instance} (pane {pane_id})")
+        return 0
+    except subprocess.CalledProcessError:
+        print(f"[ERROR] Failed to send to pane {pane_id}", file=sys.stderr)
+        return 1
+    except Exception as e:
+        print(f"[ERROR] {e}", file=sys.stderr)
+        return 1
+
+if __name__ == "__main__":
+    sys.exit(main())
