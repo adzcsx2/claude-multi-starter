@@ -128,8 +128,7 @@ Write-Host ""
 
 # Set commands based on language (embedded in script)
 if ($isChinese) {
-    # Auto-trigger mode - automatically send "继续" to next window
-    # Using correct instance names that match tab_mapping.json
+    # Auto-trigger mode - use send-tab.py for Windows Terminal
     $c1Cmd = @"
 我是 C1 窗口（实例名：c1），负责设计任务。启动自动化模式。
 
@@ -142,7 +141,7 @@ if ($isChinese) {
    - 在 State History 中添加记录
 4. 如果不是 C1 的回合，显示简短等待信息并停止
 5. 完成后自动触发下一个窗口：
-   - 执行命令: python bin/send c2 "继续"
+   - 执行命令: python send-tab.py c2 "继续"
    - 这会自动触发C2窗口开始工作
 
 【重要】完成后显示："✅ 任务完成！已自动触发 C2 窗口开始工作"
@@ -160,7 +159,7 @@ if ($isChinese) {
    - 在 State History 中添加记录
 4. 如果不是 C2 的回合，显示简短等待信息并停止
 5. 完成后自动触发下一个窗口：
-   - 执行命令: python bin/send c3 "继续"
+   - 执行命令: python send-tab.py c3 "继续"
    - 这会自动触发C3窗口开始工作
 
 【重要】完成后显示："✅ 任务完成！已自动触发 C3 窗口开始测试"
@@ -178,7 +177,7 @@ if ($isChinese) {
    - 在 State History 中添加记录
 4. 如果不是 C3 的回合，显示简短等待信息并停止
 5. 完成后自动触发下一个窗口：
-   - 执行命令: python bin/send c1 "继续"
+   - 执行命令: python send-tab.py c1 "继续"
    - 这会自动触发C1窗口开始下一个任务设计
 
 【重要】完成后显示："✅ 任务完成！已自动触发 C1 窗口开始下一个任务"

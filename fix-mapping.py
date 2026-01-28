@@ -17,21 +17,36 @@ if not mapping_file.exists():
     print(f"[ERROR] {mapping_file} not found")
     exit(1)
 
-# 读取现有映射
-with open(mapping_file, "r", encoding="utf-8") as f:
-    mapping = json.load(f)
+# 读取现有映射 (处理BOM)
+try:
+    with open(mapping_file, "r", encoding="utf-8-sig") as f:
+        mapping = json.load(f)
+except:
+    with open(mapping_file, "r", encoding="utf-8") as f:
+        mapping = json.load(f)
 
 # 获取现有的pane_id
 tabs = mapping.get("tabs", {})
 pane_ids = []
 
+# 优先使用 ui, coder, test
 for key in ["ui", "coder", "test"]:
     if key in tabs and "pane_id" in tabs[key]:
         pane_ids.append(tabs[key]["pane_id"])
 
+# 如果没有找到3个，尝试使用任意3个
+if len(pane_ids) < 3:
+    pane_ids = []
+    for key, value in tabs.items():
+        if "pane_id" in value:
+            pane_ids.append(value["pane_id"])
+        if len(pane_ids) >= 3:
+            break
+
 if len(pane_ids) < 3:
     print("[ERROR] Not enough panes found in tab_mapping.json")
     print(f"Found: {list(tabs.keys())}")
+    print("\nPlease make sure you have started 3 Claude windows")
     exit(1)
 
 # 创建新的映射 c1, c2, c3
