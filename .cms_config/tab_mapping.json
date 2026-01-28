@@ -1,38 +1,18 @@
-{
-  "work_dir": "E:\\ai_project\\claude-multi-starter",
-  "tabs": {
-    "ui": {
-      "pane_id": "10",
-      "role": "UI/UX designer"
-    },
-    "coder": {
-      "pane_id": "12",
-      "role": "developer"
-    },
-    "test": {
-      "pane_id": "13",
-      "role": "QA engineer"
-    },
-    "aa": {
-      "pane_id": "14",
-      "role": "Assistant (aa)"
-    },
-    "bb": {
-      "pane_id": "15",
-      "role": "Assistant (bb)"
-    },
-    "c1": {
-      "pane_id": "10",
-      "role": "Design (C1)"
-    },
-    "c2": {
-      "pane_id": "12",
-      "role": "Development (C2)"
-    },
-    "c3": {
-      "pane_id": "13",
-      "role": "Testing (C3)"
-    }
-  },
-  "created_at": 1769526268.745855
+﻿{
+    "tabs":  {
+                 "c3":  {
+                            "tab_index":  "2",
+                            "role":  "Testing (C3)"
+                        },
+                 "c2":  {
+                            "tab_index":  "1",
+                            "role":  "Development (C2)"
+                        },
+                 "c1":  {
+                            "tab_index":  "0",
+                            "role":  "Design (C1)"
+                        }
+             },
+    "created_at":  1769616019,
+    "work_dir":  "E:\\ai_project\\claude-multi-starter"
 }

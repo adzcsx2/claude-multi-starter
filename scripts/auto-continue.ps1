@@ -1,19 +1,22 @@
 # Auto-Continue Script for Automation
-# 监控状态变化，自动将"继续"命令放入剪贴板
+# Monitor state changes and auto-trigger next window
 
 param(
     [string]$ProjectDir = (Get-Location).Path
 )
 
+# Fix encoding issues
+chcp 65001 > $null
 $OutputEncoding = [System.Text.Encoding]::UTF8
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$PSDefaultParameterValues['*:Encoding'] = 'utf8'
 
 # Clear console
 Clear-Host
 
 Write-Host ""
 Write-Host "============================================================" -ForegroundColor Cyan
-Write-Host "         Auto-Continue for Automation" -ForegroundColor Cyan
+Write-Host "         Auto-Continue Monitor" -ForegroundColor Cyan
 Write-Host "============================================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -30,9 +33,8 @@ Write-Host "[OK] Found automation-state.md" -ForegroundColor Green
 Write-Host "Watching for state changes..." -ForegroundColor Cyan
 Write-Host ""
 Write-Host "============================================" -ForegroundColor Yellow
-Write-Host "  When prompted:" -ForegroundColor Yellow
-Write-Host "  1. Switch to the indicated window" -ForegroundColor Yellow
-Write-Host "  2. Press Ctrl+V (or right-click → Paste)" -ForegroundColor Yellow
+Write-Host "  When window completes task:" -ForegroundColor Yellow
+Write-Host "  Auto-continue will notify you" -ForegroundColor Yellow
 Write-Host "============================================" -ForegroundColor Yellow
 Write-Host ""
 Write-Host "Press Ctrl+C to stop" -ForegroundColor Red
@@ -47,18 +49,18 @@ $triggerCount = 0
 function Trigger-Continue {
     param([string]$WindowName, [string]$Step)
 
-    # Copy "继续" to clipboard
-    "继续" | Set-Clipboard
+    # Copy to clipboard
+    "continue" | Set-Clipboard
 
     $global:triggerCount++
 
-    # Show prominent notification
+    # Show notification
     Write-Host ""
-    Write-Host "════════════════════════════════════════════════════════" -BackgroundColor DarkGreen
+    Write-Host "========================================================" -BackgroundColor DarkGreen
     Write-Host "  [$($global:triggerCount)] SWITCH TO: $WindowName" -ForegroundColor Black -BackgroundColor Green
     Write-Host "  Step: $Step" -ForegroundColor Black -BackgroundColor Green
-    Write-Host "  Press Ctrl+V in the $WindowName window" -ForegroundColor Black -BackgroundColor Green
-    Write-Host "════════════════════════════════════════════════════════" -BackgroundColor DarkGreen
+    Write-Host "  Clipboard ready - Press Ctrl+V in $WindowName" -ForegroundColor Black -BackgroundColor Green
+    Write-Host "========================================================" -BackgroundColor DarkGreen
     Write-Host ""
 
     # Play sound
@@ -129,4 +131,6 @@ finally {
     Write-Host ""
     Write-Host "[STOPPED] Auto-continue disabled" -ForegroundColor Gray
     Write-Host "Total triggers: $triggerCount" -ForegroundColor Cyan
+    Write-Host ""
+    Read-Host "Press Enter to close"
 }
