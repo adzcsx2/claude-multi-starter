@@ -135,45 +135,24 @@ def main():
         target_type = target.get("type", "pane")
 
     try:
-        # 使用 WezTerm CLI 发送文本
-        # 转义消息中的引号和特殊字符
-        escaped_message = message.replace('"', '\\"').replace("$", "\\$")
-
-        # 使用 wezterm cli send-text 发送消息
-        cmd = [
-            "wezterm",
-            "cli",
-            "send-text",
-            "--pane-id",
-            target_id,
-            "--no-paste",
-            message + "\r",  # 添加回车符执行命令
-        ]
-
-        result = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            timeout=5,
+        # 发送消息（分两步：先发送消息，再发送回车）
+        subprocess.run(
+            ["wezterm", "cli", "send-text", "--pane-id", target_id, "--no-paste", message],
+            check=True,
+            capture_output=True
         )
-
-        if result.returncode == 0:
-            print(f"✓ 已发送到 {instance}")
-            return 0
-        else:
-            error_msg = result.stderr.strip()
-            if "no such pane" in error_msg:
-                print(f"Error: 实例 '{instance}' 未运行", file=sys.stderr)
-                print(
-                    f"提示: 请先运行 'python RUN.py' 启动实例",
-                    file=sys.stderr,
-                )
-            else:
-                print(f"Error: 发送失败 - {error_msg}", file=sys.stderr)
-            return 1
-
-    except subprocess.TimeoutExpired:
-        print(f"Error: 发送超时", file=sys.stderr)
+        # 发送回车
+        subprocess.run(
+            ["wezterm", "cli", "send-text", "--pane-id", target_id, "--no-paste"],
+            input=b"\r",
+            check=True,
+            capture_output=True
+        )
+        print(f"✓ 已发送到 {instance} (pane {target_id})")
+        return 0
+    except subprocess.CalledProcessError:
+        print(f"Error: 发送失败到 pane {target_id}", file=sys.stderr)
+        print(f"提示: 请先运行 'python run.py' 启动实例", file=sys.stderr)
         return 1
     except FileNotFoundError:
         print(f"Error: 未找到 wezterm 命令，请确保 WezTerm 已安装", file=sys.stderr)
