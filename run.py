@@ -227,7 +227,9 @@ def main():
         print("  ⚠️  Please run this script in WezTerm terminal")
         print("=" * 60)
         print()
-        print("This script needs to run in WezTerm terminal environment to work properly.")
+        print(
+            "This script needs to run in WezTerm terminal environment to work properly."
+        )
         print()
         print("Steps:")
         print("  1. Open WezTerm terminal")
@@ -278,7 +280,9 @@ def main():
                 except:
                     pass
                 if retry < max_retries - 1:
-                    print(f"[*] Waiting for CLI to be ready... ({retry+1}/{max_retries})")
+                    print(
+                        f"[*] Waiting for CLI to be ready... ({retry+1}/{max_retries})"
+                    )
                     time.sleep(1)
 
             if not cli_ready:
