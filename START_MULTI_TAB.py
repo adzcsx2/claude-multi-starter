@@ -2,6 +2,14 @@
 """
 WezTerm 多标签页启动器
 在一个 WezTerm 窗口中创建多个标签页(tabs),每个运行 Claude 实例
+
+用法:
+    python START_MULTI_TAB.py [--bypass] [实例1] [实例2] ...
+    
+示例:
+    python START_MULTI_TAB.py ui coder test
+    python START_MULTI_TAB.py --bypass c1 c2 c3 c4
+    python START_MULTI_TAB.py  # 默认使用 c1 c2 c3
 """
 
 import sys
@@ -44,7 +52,7 @@ def check_wezterm():
     return False, "WezTerm not working"
 
 
-def spawn_new_tab(wezterm_bin, cwd, instance_id):
+def spawn_new_tab(wezterm_bin, cwd, instance_id, claude_args=""):
     """在当前窗口创建一个新标签页(tab)并启动 Claude"""
     try:
         # 使用 spawn 创建新标签页（不使用 --new-window）
@@ -71,7 +79,7 @@ def spawn_new_tab(wezterm_bin, cwd, instance_id):
             if pane_id:
                 # 在新标签页中启动 Claude
                 time.sleep(0.5)
-                send_cmd = f"claude --dangerously-skip-permissions"
+                send_cmd = f"claude{' ' + claude_args if claude_args else ''}"
                 print(f"[DEBUG] Sending to pane {pane_id}: {send_cmd}")
 
                 result2 = subprocess.run(
@@ -81,14 +89,14 @@ def spawn_new_tab(wezterm_bin, cwd, instance_id):
                         "send-text",
                         "--pane-id",
                         pane_id,
-                        "--no-paste",
-                        send_cmd + "\n",  # 添加换行符自动执行
+                        send_cmd + "\r",  # 使用 \r 而不是 \n 确保执行
                     ],
                     capture_output=True,
                     text=True,
                     timeout=5,
                 )
                 print(f"[DEBUG] Send-text return code: {result2.returncode}")
+                print(f"[DEBUG] Send-text stderr: {result2.stderr}")
 
                 return pane_id
             return None
@@ -98,6 +106,10 @@ def spawn_new_tab(wezterm_bin, cwd, instance_id):
 
     except Exception as e:
         print(f"[!] Exception creating tab: {e}")
+        import traceback
+
+        traceback.print_exc()
+        return None
         import traceback
 
         traceback.print_exc()
@@ -167,16 +179,32 @@ def is_in_wezterm():
 
 
 def main():
-    # 检查参数 - 默认使用 c1,c2,c3
-    if len(sys.argv) < 2:
-        print("Using default instances: c1,c2,c3")
-        instances_arg = "c1,c2,c3"
+    # 解析命令行参数
+    bypass = False
+    instance_args = []
+    
+    for arg in sys.argv[1:]:
+        if arg == "--bypass":
+            bypass = True
+        else:
+            instance_args.append(arg)
+    
+    # 构建 Claude 参数
+    claude_args = "--dangerously-skip-permissions" if bypass else ""
+    
+    # 确定实例列表
+    if not instance_args:
+        # 默认使用 c1, c2, c3
+        instance_ids = ["c1", "c2", "c3"]
+        print(f"[*] 使用默认实例: {', '.join(instance_ids)}")
     else:
-        instances_arg = sys.argv[1]
-
-    instance_ids = [inst.strip() for inst in instances_arg.split(",") if inst.strip()]
-
-    print(f"[*] Will create {len(instance_ids)} tabs for: {', '.join(instance_ids)}")
+        instance_ids = [inst.strip() for inst in instance_args if inst.strip()]
+        print(f"[*] 使用指定实例: {', '.join(instance_ids)}")
+    
+    if bypass:
+        print(f"[*] 使用 --bypass 模式 (--dangerously-skip-permissions)")
+    
+    print(f"[*] 将创建 {len(instance_ids)} 个标签页")
     print()
 
     # 加载配置
@@ -229,6 +257,9 @@ def main():
             first_instance = instance_ids[0]
             spec = all_instances[first_instance]
 
+            # 构建启动命令
+            claude_cmd = f"claude{' ' + claude_args if claude_args else ''}"
+            
             # 启动 WezTerm 并在第一个标签页运行 pwsh（等待命令）
             result = subprocess.Popen(
                 [
@@ -239,7 +270,7 @@ def main():
                     "pwsh",
                     "-NoExit",
                     "-Command",
-                    f"Write-Host '[{first_instance}] Ready. Starting Claude...'; claude --dangerously-skip-permissions",
+                    f"Write-Host '[{first_instance}] Ready. Starting Claude...'; {claude_cmd}",
                 ],
             )
 
@@ -312,7 +343,7 @@ def main():
                     f"[*] 创建标签页 {i+1}/{len(instance_ids)}: {inst_id} - {spec.role}"
                 )
 
-                pane_id = spawn_new_tab(wezterm_bin, work_dir, inst_id)
+                pane_id = spawn_new_tab(wezterm_bin, work_dir, inst_id, claude_args)
                 if pane_id:
                     set_tab_title(wezterm_bin, pane_id, f"{inst_id} - {spec.role}")
                     instance_tabs[inst_id] = {
@@ -401,6 +432,7 @@ def main():
 
         # 在当前窗格启动 Claude
         print(f"[*] Starting Claude in current pane...")
+        claude_cmd = f"claude{' ' + claude_args if claude_args else ''}"
         if current_pane_id:
             subprocess.run(
                 [
@@ -409,22 +441,8 @@ def main():
                     "send-text",
                     "--pane-id",
                     current_pane_id,
-                    "--no-paste",
-                    "claude --dangerously-skip-permissions",
+                    claude_cmd + "\r",
                 ],
-                capture_output=True,
-                timeout=5,
-            )
-            subprocess.run(
-                [
-                    wezterm_bin,
-                    "cli",
-                    "send-text",
-                    "--pane-id",
-                    current_pane_id,
-                    "--no-paste",
-                ],
-                input=b"\r",
                 capture_output=True,
                 timeout=5,
             )
@@ -450,7 +468,7 @@ def main():
             spec = all_instances[inst_id]
             print(f"[*] Creating tab {i+1} for {inst_id} ({spec.role})...")
 
-            pane_id = spawn_new_tab(wezterm_bin, work_dir, inst_id)
+            pane_id = spawn_new_tab(wezterm_bin, work_dir, inst_id, claude_args)
 
             if pane_id:
                 print(f"[+] Created tab {i+1}: {inst_id}")
