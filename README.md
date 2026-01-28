@@ -183,6 +183,7 @@ The `send` command reads pane IDs from this file to route messages to specific t
 1. Confirm mapping file exists: `.cms_config/tab_mapping.json`
 2. Restart instances to refresh mappings
 3. Check instance ID is correct (case-sensitive)
+4. **Disable Claude Skills conflicts**: If you have custom skills like `ask`, `send`, or `ping` in your Claude configuration, they may conflict with this project's MCP tools. Remove or rename conflicting skills in `~/.config/claude/config.json`
 
 ### WezTerm Detection Failure
 

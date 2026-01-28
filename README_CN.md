@@ -183,6 +183,7 @@ claude-multi-starter/
 1. 确认映射文件存在：`.cms_config/tab_mapping.json`
 2. 重新启动实例刷新映射
 3. 检查实例 ID 是否正确（区分大小写）
+4. **禁用 Claude Skills 冲突**：如果你在 Claude 配置中有自定义 skills（如 `ask`、`send`、`ping` 等），它们可能与本项目的 MCP 工具冲突。请在 `~/.config/claude/config.json` 中删除或重命名冲突的 skills
 
 ### WezTerm 检测失败
 
