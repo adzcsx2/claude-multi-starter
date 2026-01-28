@@ -129,8 +129,9 @@ Write-Host ""
 # Set commands based on language (embedded in script)
 if ($isChinese) {
     # Auto-trigger mode - automatically send "继续" to next window
+    # Using correct instance names that match tab_mapping.json
     $c1Cmd = @"
-我是 C1 窗口，负责设计任务。启动自动化模式。
+我是 C1 窗口（实例名：c1），负责设计任务。启动自动化模式。
 
 【自动化规则】
 1. 读取 task-comms/automation-state.md 检查当前状态
@@ -148,7 +149,7 @@ if ($isChinese) {
 "@
 
     $c2Cmd = @"
-我是 C2 窗口，负责开发任务。启动自动化模式。
+我是 C2 窗口（实例名：c2），负责开发任务。启动自动化模式。
 
 【自动化规则】
 1. 读取 task-comms/automation-state.md 检查当前状态
@@ -166,7 +167,7 @@ if ($isChinese) {
 "@
 
     $c3Cmd = @"
-我是 C3 窗口，负责测试任务。启动自动化模式。
+我是 C3 窗口（实例名：c3），负责测试任务。启动自动化模式。
 
 【自动化规则】
 1. 读取 task-comms/automation-state.md 检查当前状态
@@ -311,6 +312,53 @@ try {
     Start-Process -FilePath $wtPath -ArgumentList $wtArgs -ErrorAction Stop
     
     Write-Host "[SUCCESS] Windows Terminal launched with 3 tabs" -ForegroundColor Green
+    Write-Host ""
+    Write-Host "Waiting for tabs to initialize..." -ForegroundColor Cyan
+    Start-Sleep -Seconds 3
+    
+    # Create tab mapping file
+    Write-Host "Creating tab mapping for c1, c2, c3..." -ForegroundColor Cyan
+    
+    # Manually create the mapping file since we know the tab structure
+    $configDir = Join-Path $PROJECT_DIR ".cms_config"
+    if (-not (Test-Path $configDir)) {
+        New-Item -ItemType Directory -Path $configDir -Force | Out-Null
+    }
+    
+    # Query current windows and tabs
+    try {
+        $wtListOutput = & wt.exe list 2>&1
+        Write-Host "[INFO] Detected tabs, creating mapping..." -ForegroundColor Cyan
+        
+        # Create a simple sequential mapping based on tab order
+        # Tab 0 = c1, Tab 1 = c2, Tab 2 = c3
+        $mapping = @{
+            work_dir = $PROJECT_DIR
+            tabs = @{
+                c1 = @{
+                    tab_index = "0"
+                    role = "Design (C1)"
+                }
+                c2 = @{
+                    tab_index = "1"
+                    role = "Development (C2)"
+                }
+                c3 = @{
+                    tab_index = "2"
+                    role = "Testing (C3)"
+                }
+            }
+            created_at = [int](Get-Date -UFormat %s)
+        }
+        
+        $mappingFile = Join-Path $configDir "tab_mapping.json"
+        $mapping | ConvertTo-Json -Depth 10 | Set-Content -Path $mappingFile -Encoding UTF8
+        
+        Write-Host "[OK] Tab mapping created for c1, c2, c3" -ForegroundColor Green
+    }
+    catch {
+        Write-Host "[WARN] Could not auto-create mapping, will need manual initialization" -ForegroundColor Yellow
+    }
 }
 catch {
     Write-Host "[ERROR] Failed to launch Windows Terminal" -ForegroundColor Red

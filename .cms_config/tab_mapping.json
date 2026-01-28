@@ -20,6 +20,18 @@
     "bb": {
       "pane_id": "15",
       "role": "Assistant (bb)"
+    },
+    "c1": {
+      "pane_id": "10",
+      "role": "Design (C1)"
+    },
+    "c2": {
+      "pane_id": "12",
+      "role": "Development (C2)"
+    },
+    "c3": {
+      "pane_id": "13",
+      "role": "Testing (C3)"
     }
   },
   "created_at": 1769526268.745855

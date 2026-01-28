@@ -102,8 +102,8 @@ def main():
     if len(sys.argv) < 3:
         print("Usage: send <instance> <message>", file=sys.stderr)
         print("Examples:", file=sys.stderr)
-        print("  send ui 'Design a login page'", file=sys.stderr)
-        print("  send coder 'Implement this feature'", file=sys.stderr)
+        print("  send c1 '继续'", file=sys.stderr)
+        print("  send c2 'Implement this feature'", file=sys.stderr)
         return 1
 
     instance = sys.argv[1].lower()
@@ -125,79 +125,45 @@ def main():
     target_type = target.get("type", "pane")
 
     try:
-        if target_type == "window":
-            # 发送到窗口
-            subprocess.run(
-                [
-                    "wezterm",
-                    "cli",
-                    "send-text",
-                    "--window-id",
-                    target_id,
-                    "--no-paste",
-                    message,
-                ],
-                check=True,
-                capture_output=True,
-            )
-            # 发送回车
-            subprocess.run(
-                ["wezterm", "cli", "send-text", "--window-id", target_id, "--no-paste"],
-                input=b"\r",
-                check=True,
-                capture_output=True,
-            )
-            print(f"[OK] Sent to {instance} (window {target_id})")
-        elif target_type == "tab":
-            # 发送到标签页 (标签页使用 pane_id)
-            subprocess.run(
-                [
-                    "wezterm",
-                    "cli",
-                    "send-text",
-                    "--pane-id",
-                    target_id,
-                    "--no-paste",
-                    message,
-                ],
-                check=True,
-                capture_output=True,
-            )
-            # 发送回车
-            subprocess.run(
-                ["wezterm", "cli", "send-text", "--pane-id", target_id, "--no-paste"],
-                input=b"\r",
-                check=True,
-                capture_output=True,
-            )
+        # Windows Terminal uses different approach - focus and send keys
+        # We'll use a PowerShell script to send text to a specific tab
+        
+        # Create a temp PowerShell script
+        script_content = f"""
+$Host.UI.RawUI.WindowTitle = "Sending to {instance}"
+# Focus the target tab and send text
+wt.exe -w 0 focus-tab --target {target_id}
+Start-Sleep -Milliseconds 500
+
+# Send the text character by character (workaround for WT limitation)
+Add-Type -AssemblyName System.Windows.Forms
+[System.Windows.Forms.SendKeys]::SendWait("{message.replace('"', '`"')}")
+[System.Windows.Forms.SendKeys]::SendWait("{{ENTER}}")
+"""
+        
+        # Save temp script
+        temp_script = Path.cwd() / ".cms_config" / "temp_send.ps1"
+        temp_script.parent.mkdir(parents=True, exist_ok=True)
+        with open(temp_script, "w", encoding="utf-8") as f:
+            f.write(script_content)
+        
+        # Execute PowerShell script
+        result = subprocess.run(
+            ["powershell", "-ExecutionPolicy", "Bypass", "-File", str(temp_script)],
+            capture_output=True,
+            text=True,
+            timeout=5
+        )
+        
+        if result.returncode == 0:
             print(f"[OK] Sent to {instance} (tab {target_id})")
+            return 0
         else:
-            # 发送到窗格
-            subprocess.run(
-                [
-                    "wezterm",
-                    "cli",
-                    "send-text",
-                    "--pane-id",
-                    target_id,
-                    "--no-paste",
-                    message,
-                ],
-                check=True,
-                capture_output=True,
-            )
-            # 发送回车
-            subprocess.run(
-                ["wezterm", "cli", "send-text", "--pane-id", target_id, "--no-paste"],
-                input=b"\r",
-                check=True,
-                capture_output=True,
-            )
-            print(f"[OK] Sent to {instance} (pane {target_id})")
-        return 0
-    except subprocess.CalledProcessError as e:
-        print(f"[ERROR] Failed to send to {target_type} {target_id}", file=sys.stderr)
-        print(f"[ERROR] {e}", file=sys.stderr)
+            print(f"[ERROR] Failed to send: {result.stderr}", file=sys.stderr)
+            return 1
+            
+    except subprocess.TimeoutExpired:
+        print(f"[ERROR] Timeout sending to {instance}", file=sys.stderr)
         return 1
     except Exception as e:
         print(f"[ERROR] {e}", file=sys.stderr)
