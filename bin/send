@@ -127,7 +127,7 @@ def main():
     try:
         # Windows Terminal uses different approach - focus and send keys
         # We'll use a PowerShell script to send text to a specific tab
-        
+
         # Create a temp PowerShell script
         script_content = f"""
 $Host.UI.RawUI.WindowTitle = "Sending to {instance}"
@@ -140,28 +140,28 @@ Add-Type -AssemblyName System.Windows.Forms
 [System.Windows.Forms.SendKeys]::SendWait("{message.replace('"', '`"')}")
 [System.Windows.Forms.SendKeys]::SendWait("{{ENTER}}")
 """
-        
+
         # Save temp script
         temp_script = Path.cwd() / ".cms_config" / "temp_send.ps1"
         temp_script.parent.mkdir(parents=True, exist_ok=True)
         with open(temp_script, "w", encoding="utf-8") as f:
             f.write(script_content)
-        
+
         # Execute PowerShell script
         result = subprocess.run(
             ["powershell", "-ExecutionPolicy", "Bypass", "-File", str(temp_script)],
             capture_output=True,
             text=True,
-            timeout=5
+            timeout=5,
         )
-        
+
         if result.returncode == 0:
             print(f"[OK] Sent to {instance} (tab {target_id})")
             return 0
         else:
             print(f"[ERROR] Failed to send: {result.stderr}", file=sys.stderr)
             return 1
-            
+
     except subprocess.TimeoutExpired:
         print(f"[ERROR] Timeout sending to {instance}", file=sys.stderr)
         return 1

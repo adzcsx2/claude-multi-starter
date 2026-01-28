@@ -51,18 +51,9 @@ if len(pane_ids) < 3:
 
 # 创建新的映射 c1, c2, c3
 new_tabs = {
-    "c1": {
-        "pane_id": pane_ids[0],  # ui的pane_id
-        "role": "Design (C1)"
-    },
-    "c2": {
-        "pane_id": pane_ids[1],  # coder的pane_id
-        "role": "Development (C2)"
-    },
-    "c3": {
-        "pane_id": pane_ids[2],  # test的pane_id
-        "role": "Testing (C3)"
-    }
+    "c1": {"pane_id": pane_ids[0], "role": "Design (C1)"},  # ui的pane_id
+    "c2": {"pane_id": pane_ids[1], "role": "Development (C2)"},  # coder的pane_id
+    "c3": {"pane_id": pane_ids[2], "role": "Testing (C3)"},  # test的pane_id
 }
 
 # 保留旧的映射，添加新的
