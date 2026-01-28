@@ -1,25 +1,60 @@
+# Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
 .venv/
+venv/
+env/
+ENV/
 .pytest_cache/
+.coverage
+.tox/
+*.cover
+.hypothesis/
+
+# Documentation and tests (if not needed in repo)
 docs/
 !docs/**/*.md
 tests/
-.ccb_config/
-.codex-session
-.gemini-session
+
+# Configuration and session files
+.cms_config/
 .claude-session
 .claude-*-session
-.opencode-session
-opencode.json
 .claude/
 !.claude/README.md
-*.mp4
+
+# Temporary files
 nul
 tmp/
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+logs/
+
+# IDE and editors
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+.vs/
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Project specific
 compare_with_mcp/
 CLAUDE.md
-AGENTS.md
-GEMINI.md
-openspec
-*.log
