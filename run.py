@@ -205,7 +205,9 @@ def main():
 
     if claude_args:
         print(f"[*] Claude args: {claude_args}")
-    print(f"[*] Will create {len(instance_ids)} tabs (from instances with autostart: true)")
+    print(
+        f"[*] Will create {len(instance_ids)} tabs (from instances with autostart: true)"
+    )
     print()
 
     # Create instance mapping
