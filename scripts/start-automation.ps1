@@ -314,51 +314,13 @@ try {
     Write-Host "[SUCCESS] Windows Terminal launched with 3 tabs" -ForegroundColor Green
     Write-Host ""
     Write-Host "Waiting for tabs to initialize..." -ForegroundColor Cyan
-    Start-Sleep -Seconds 3
+    Start-Sleep -Seconds 2
     
-    # Create tab mapping file
-    Write-Host "Creating tab mapping for c1, c2, c3..." -ForegroundColor Cyan
-    
-    # Manually create the mapping file since we know the tab structure
-    $configDir = Join-Path $PROJECT_DIR ".cms_config"
-    if (-not (Test-Path $configDir)) {
-        New-Item -ItemType Directory -Path $configDir -Force | Out-Null
-    }
-    
-    # Query current windows and tabs
-    try {
-        $wtListOutput = & wt.exe list 2>&1
-        Write-Host "[INFO] Detected tabs, creating mapping..." -ForegroundColor Cyan
-        
-        # Create a simple sequential mapping based on tab order
-        # Tab 0 = c1, Tab 1 = c2, Tab 2 = c3
-        $mapping = @{
-            work_dir = $PROJECT_DIR
-            tabs = @{
-                c1 = @{
-                    tab_index = "0"
-                    role = "Design (C1)"
-                }
-                c2 = @{
-                    tab_index = "1"
-                    role = "Development (C2)"
-                }
-                c3 = @{
-                    tab_index = "2"
-                    role = "Testing (C3)"
-                }
-            }
-            created_at = [int](Get-Date -UFormat %s)
-        }
-        
-        $mappingFile = Join-Path $configDir "tab_mapping.json"
-        $mapping | ConvertTo-Json -Depth 10 | Set-Content -Path $mappingFile -Encoding UTF8
-        
-        Write-Host "[OK] Tab mapping created for c1, c2, c3" -ForegroundColor Green
-    }
-    catch {
-        Write-Host "[WARN] Could not auto-create mapping, will need manual initialization" -ForegroundColor Yellow
-    }
+    # Note: Tab mapping will be created when you run fix-mapping.py
+    Write-Host "[INFO] Tab mapping needs to be initialized" -ForegroundColor Cyan
+    Write-Host "Run this command after all 3 tabs are ready:" -ForegroundColor Yellow
+    Write-Host "  python fix-mapping.py" -ForegroundColor White
+    Write-Host ""
 }
 catch {
     Write-Host "[ERROR] Failed to launch Windows Terminal" -ForegroundColor Red
