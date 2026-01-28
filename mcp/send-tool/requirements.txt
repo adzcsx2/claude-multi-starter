@@ -1,0 +1,2 @@
+﻿# No external dependencies required
+# MCP server implemented using standard library only

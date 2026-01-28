@@ -1,5 +1,7 @@
 # Claude Multi Starter
 
+![项目示例](images/example.png)
+
 中文文档 | [English](README.md)
 
 多实例 Claude CLI 启动和通信工具。在 WezTerm 中同时运行多个独立的 Claude 实例，实现 AI 助手协同工作。
@@ -63,12 +65,32 @@ python run.py
 
 ### 3. 实例间通信
 
+**方法一：命令行方式**
+
 ```bash
 python send default "分配任务给其他实例"
 python send ui "设计登录页面"
 python send coder "实现用户认证功能"
 python send test "测试登录流程"
 ```
+
+**方法二：MCP 工具（在 Claude 实例内部）**
+
+运行 `python run.py` 后，MCP 服务器会自动配置。您可以直接让 Claude 发送消息：
+
+```
+# 在任何 Claude 实例中，直接说：
+"给 ui 发送消息：设计登录页面"
+"让 coder 实现用户认证功能"
+"让 test 验证登录流程"
+```
+
+Claude 会自动使用 `send_message` 工具与其他实例通信。
+
+**注意**：
+
+- MCP 服务器配置会在每次运行 `python run.py` 时自动更新
+- **已知限制**：由于 Claude CLI 的编码问题，MCP 工具目前对中文等非 ASCII 字符支持不佳。如需发送中文消息，请使用命令行方式：`python send <实例名> "中文消息"`
 
 ## 💡 使用示例
 

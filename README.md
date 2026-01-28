@@ -1,5 +1,7 @@
 # Claude Multi Starter
 
+![Project Example](images/example.png)
+
 [中文文档](README_CN.md) | English
 
 Multi-instance Claude CLI launcher and communication tool. Run multiple independent Claude instances simultaneously in WezTerm for AI assistant collaboration.
@@ -63,12 +65,32 @@ The script will automatically:
 
 ### 3. Send Messages Between Instances
 
+**Method 1: Command Line**
+
 ```bash
 python send default "Assign tasks to other instances"
 python send ui "Design the login page"
 python send coder "Implement user authentication"
 python send test "Test the login flow"
 ```
+
+**Method 2: MCP Tool (Inside Claude Instances)**
+
+After running `python run.py`, the MCP server is automatically configured. You can directly ask Claude to send messages:
+
+```
+# In any Claude instance, just say:
+"Send a message to ui: Design the login page"
+"Tell coder to implement user authentication"
+"Ask test to verify the login flow"
+```
+
+Claude will automatically use the `send_message` tool to communicate with other instances.
+
+**Note:**
+
+- The MCP server configuration is automatically updated each time you run `python run.py`
+- **Known Limitation**: MCP tool currently has encoding issues with non-ASCII characters (Chinese, etc.) due to Claude CLI limitations. For non-English messages, use the command line method instead: `python send <instance> "中文消息"`
 
 ## 💡 Usage Example
 

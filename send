@@ -70,15 +70,37 @@ def load_config():
 
 
 def main():
-    if len(sys.argv) < 3:
-        print("Usage: send <instance> <message>", file=sys.stderr)
+    # Support three modes: command line args, stdin, or file (for backward compatibility)
+    if len(sys.argv) < 2:
+        print("Usage: send <instance> [message]", file=sys.stderr)
+        print("       send <instance> --file <path>", file=sys.stderr)
         print("Examples:", file=sys.stderr)
         print("  send c1 'continue'", file=sys.stderr)
         print("  send c2 'Implement this feature'", file=sys.stderr)
+        print("  send c1 --file message.txt", file=sys.stderr)
         return 1
 
     instance = sys.argv[1].lower()
-    message = " ".join(sys.argv[2:])
+
+    # Check if reading from file (backward compatibility)
+    if len(sys.argv) >= 4 and sys.argv[2] == "--file":
+        file_path = sys.argv[3]
+        try:
+            # Read as binary and decode UTF-8 to avoid encoding issues
+            with open(file_path, "rb") as f:
+                message = f.read().decode("utf-8", errors="replace").strip()
+        except Exception as e:
+            print(f"Error: Could not read file {file_path}: {e}", file=sys.stderr)
+            return 1
+    elif len(sys.argv) >= 3:
+        # Message provided as arg
+        message = " ".join(sys.argv[2:])
+    else:
+        # Read message from stdin
+        message = sys.stdin.read().strip()
+        if not message:
+            print("Error: No message provided", file=sys.stderr)
+            return 1
 
     role_map = load_config()
 
@@ -103,7 +125,7 @@ def main():
         pane_id = role_map[instance]
 
     try:
-        # Send message (in two steps: send message first, then send enter)
+        # Send message to WezTerm pane
         subprocess.run(
             [
                 "wezterm",

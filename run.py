@@ -22,6 +22,33 @@ script_dir = Path(__file__).resolve().parent
 sys.path.insert(0, str(script_dir / "lib"))
 
 
+def configure_mcp_server(project_root: Path) -> bool:
+    """Configure MCP server in project .claude/config.json"""
+    # Create project-level MCP config
+    claude_dir = project_root / ".claude"
+    config_path = claude_dir / "config.json"
+
+    # Create .claude directory if needed
+    claude_dir.mkdir(parents=True, exist_ok=True)
+
+    # MCP server configuration
+    mcp_server_path = str(project_root / "mcp" / "send-tool" / "server.py")
+    config = {
+        "mcpServers": {"send-tool": {"command": "python", "args": [mcp_server_path]}}
+    }
+
+    # Save config
+    try:
+        with open(config_path, "w", encoding="utf-8") as f:
+            json.dump(config, f, indent=2)
+        print(f"[+] MCP server configured: {config_path}")
+        print(f"[+] Server path: {mcp_server_path}")
+        return True
+    except Exception as e:
+        print(f"[!] Failed to configure MCP server: {e}")
+        return False
+
+
 def _find_wezterm_bin():
     """Find WezTerm binary"""
     import shutil
@@ -75,30 +102,8 @@ def spawn_new_tab(wezterm_bin, cwd, instance_id, claude_args=""):
             print(f"[DEBUG] Created tab with pane: {pane_id}")
 
             if pane_id:
-                # Set up send function, then start Claude
+                # Start Claude in new tab
                 time.sleep(0.5)
-                
-                # Step 1: Define send function
-                send_script_path = str(cwd / "send").replace("\\", "/")
-                setup_cmd = f'function send {{ python "{send_script_path}" $args }}'
-                print(f"[DEBUG] Setting up send function in pane {pane_id}")
-                
-                subprocess.run(
-                    [
-                        wezterm_bin,
-                        "cli",
-                        "send-text",
-                        "--pane-id",
-                        pane_id,
-                        setup_cmd + "\r",
-                    ],
-                    capture_output=True,
-                    text=True,
-                    timeout=5,
-                )
-                time.sleep(0.3)
-                
-                # Step 2: Start Claude
                 send_cmd = f"claude{' ' + claude_args if claude_args else ''}"
                 print(f"[DEBUG] Sending to pane {pane_id}: {send_cmd}")
 
@@ -109,7 +114,7 @@ def spawn_new_tab(wezterm_bin, cwd, instance_id, claude_args=""):
                         "send-text",
                         "--pane-id",
                         pane_id,
-                        send_cmd + "\r",  # Use \r instead of \n to ensure execution
+                        send_cmd + "\r",
                     ],
                     capture_output=True,
                     text=True,
@@ -203,6 +208,13 @@ def main():
     from cms_start_config import load_start_config
 
     work_dir = Path.cwd()
+
+    # Configure MCP server with current project path
+    print("[*] Configuring MCP server...")
+    if not configure_mcp_server(work_dir):
+        print("[!] Warning: MCP server configuration failed, but continuing...")
+    print()
+
     config = load_start_config(work_dir)
     claude_config = config.claude_config
 
@@ -223,7 +235,16 @@ def main():
     # Read Claude parameters from config
     flags = config.data.get("flags", {})
     claude_args_list = flags.get("claudeArgs", [])
-    claude_args = " ".join(claude_args_list) if claude_args_list else ""
+
+    # Add MCP config path
+    mcp_config_path = work_dir / ".claude" / "config.json"
+    if mcp_config_path.exists():
+        claude_args_list.append(f"--mcp-config")
+        claude_args_list.append(str(mcp_config_path))
+
+    claude_args = " ".join(
+        f'"{arg}"' if " " in arg else arg for arg in claude_args_list
+    )
 
     if claude_args:
         print(f"[*] Claude args: {claude_args}")
@@ -461,28 +482,8 @@ def main():
 
         # Start Claude in current pane
         print(f"[*] Starting Claude in current pane...")
+        claude_cmd = f"claude{' ' + claude_args if claude_args else ''}"
         if current_pane_id:
-            # Step 1: Define send function
-            send_script_path = str(work_dir / "send").replace("\\", "/")
-            setup_cmd = f'function send {{ python "{send_script_path}" $args }}'
-            print(f"[DEBUG] Setting up send function in current pane")
-            
-            subprocess.run(
-                [
-                    wezterm_bin,
-                    "cli",
-                    "send-text",
-                    "--pane-id",
-                    current_pane_id,
-                    setup_cmd + "\r",
-                ],
-                capture_output=True,
-                timeout=5,
-            )
-            time.sleep(0.3)
-            
-            # Step 2: Start Claude
-            claude_cmd = f"claude{' ' + claude_args if claude_args else ''}"
             subprocess.run(
                 [
                     wezterm_bin,

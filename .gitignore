@@ -13,7 +13,9 @@ tests/
 .opencode-session
 opencode.json
 .claude/
+!.claude/README.md
 *.mp4
+nul
 tmp/
 compare_with_mcp/
 CLAUDE.md
