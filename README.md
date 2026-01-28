@@ -4,59 +4,21 @@
 
 Multi-instance Claude CLI launcher and communication tool. Run multiple independent Claude instances simultaneously in WezTerm for AI assistant collaboration.
 
+## 📋 Prerequisites
+
+Before using this tool, ensure you have:
+
+1. **Python 3.10+** - Check version: `python --version`
+2. **WezTerm** - Check if installed: `wezterm --version`
+   - If not installed, visit: https://wezterm.org/index.html
+3. **Claude CLI** - Check if installed: `claude --version`
+
 ## ✨ Core Features
 
 - 🚀 **Multi-Instance Launch** - Start multiple Claude instances in WezTerm tabs with one command
 - 💬 **Instance Communication** - Send messages between instances using the `send` command
 - ⚡️ **Flexible Configuration** - Customize instance count and roles via `cms.config`
 - 📍 **Auto Mapping** - Automatically save instance-to-tab mappings
-
-## 📋 Requirements
-
-- **Python 3.10+** (requires modern type hints support)
-- **WezTerm** - Terminal multiplexer (installation instructions below)
-- **Claude CLI** - Anthropic's official command-line tool
-
-### Installing WezTerm
-
-**Windows:**
-```powershell
-# Using winget
-winget install wez.wezterm
-
-# Or download installer from:
-# https://wezfurlong.org/wezterm/installation.html
-```
-
-**macOS:**
-```bash
-# Using Homebrew
-brew install --cask wezterm
-
-# Or download from:
-# https://wezfurlong.org/wezterm/installation.html
-```
-
-**Linux:**
-```bash
-# Ubuntu/Debian
-curl -fsSL https://apt.fury.io/wez/gpg.key | sudo gpg --dearmor -o /usr/share/keyrings/wezterm-fury.gpg
-echo 'deb [signed-by=/usr/share/keyrings/wezterm-fury.gpg] https://apt.fury.io/wez/ * *' | sudo tee /etc/apt/sources.list.d/wezterm.list
-sudo apt update
-sudo apt install wezterm
-
-# Fedora/RHEL
-sudo dnf copr enable wezfurlong/wezterm
-sudo dnf install wezterm
-
-# Arch Linux
-yay -S wezterm
-```
-
-Verify installation:
-```bash
-wezterm --version
-```
 
 ## 🚀 Quick Start
 
@@ -99,15 +61,6 @@ The script will automatically:
 
 ### 3. Send Messages Between Instances
 
-**Windows:**
-```cmd
-python send default "Assign tasks to other instances"
-python send ui "Design the login page"
-python send coder "Implement user authentication"
-python send test "Test the login flow"
-```
-
-**macOS/Linux:**
 ```bash
 python send default "Assign tasks to other instances"
 python send ui "Design the login page"

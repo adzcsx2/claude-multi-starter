@@ -4,59 +4,21 @@
 
 多实例 Claude CLI 启动和通信工具。在 WezTerm 中同时运行多个独立的 Claude 实例，实现 AI 助手协同工作。
 
+## 📋 前置条件
+
+使用前请确保你已安装：
+
+1. **Python 3.10+** - 检查版本：`python --version`
+2. **WezTerm** - 检查是否安装：`wezterm --version`
+   - 如未安装，请访问：https://wezterm.org/index.html
+3. **Claude CLI** - 检查是否安装：`claude --version`
+
 ## ✨ 核心功能
 
 - 🚀 **多实例启动** - 一键在 WezTerm 标签页中启动多个 Claude 实例
 - 💬 **实例通信** - 使用 `send` 命令在实例间发送消息
 - ⚡️ **灵活配置** - 通过 `cms.config` 自定义实例数量和角色
 - 📍 **自动映射** - 自动保存实例到标签页的映射关系
-
-## 📋 环境要求
-
-- **Python 3.10+**（需要现代类型提示支持）
-- **WezTerm** - 终端复用器（安装说明见下文）
-- **Claude CLI** - Anthropic 官方命令行工具
-
-### 安装 WezTerm
-
-**Windows:**
-```powershell
-# 使用 winget
-winget install wez.wezterm
-
-# 或从官网下载安装包：
-# https://wezfurlong.org/wezterm/installation.html
-```
-
-**macOS:**
-```bash
-# 使用 Homebrew
-brew install --cask wezterm
-
-# 或从官网下载：
-# https://wezfurlong.org/wezterm/installation.html
-```
-
-**Linux:**
-```bash
-# Ubuntu/Debian
-curl -fsSL https://apt.fury.io/wez/gpg.key | sudo gpg --dearmor -o /usr/share/keyrings/wezterm-fury.gpg
-echo 'deb [signed-by=/usr/share/keyrings/wezterm-fury.gpg] https://apt.fury.io/wez/ * *' | sudo tee /etc/apt/sources.list.d/wezterm.list
-sudo apt update
-sudo apt install wezterm
-
-# Fedora/RHEL
-sudo dnf copr enable wezfurlong/wezterm
-sudo dnf install wezterm
-
-# Arch Linux
-yay -S wezterm
-```
-
-验证安装：
-```bash
-wezterm --version
-```
 
 ## 🚀 快速开始
 
@@ -101,15 +63,6 @@ python run.py
 
 ### 3. 实例间通信
 
-**Windows:**
-```cmd
-python send default "分配任务给其他实例"
-python send ui "设计登录页面"
-python send coder "实现用户认证功能"
-python send test "测试登录流程"
-```
-
-**macOS/Linux:**
 ```bash
 python send default "分配任务给其他实例"
 python send ui "设计登录页面"
