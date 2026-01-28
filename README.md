@@ -145,8 +145,7 @@ claude-multi-starter/
 ├── lib/                        # Core library files
 ├── cms.config                  # Instance configuration
 ├── RUN.py                      # Launch script
-├── send                        # Communication script (macOS/Linux)
-├── send.cmd                    # Communication script (Windows)
+├── send                        # Communication script
 ├── README.md                   # This document
 └── README_CN.md                # Chinese documentation
 ```

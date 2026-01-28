@@ -147,8 +147,7 @@ claude-multi-starter/
 ├── lib/                        # 核心库文件
 ├── cms.config                  # 实例配置文件
 ├── RUN.py                      # 启动脚本
-├── send                        # 通信脚本（Linux/Mac）
-├── send.cmd                    # 通信脚本（Windows）
+├── send                        # 通信脚本
 ├── README.md                   # 英文文档
 └── README_CN.md                # 中文文档
 ```
