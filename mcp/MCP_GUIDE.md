@@ -34,7 +34,7 @@ After running `python run.py`, your `~/.config/claude/config.json` will contain:
   "mcpServers": {
     "send-tool": {
       "command": "python",
-      "args": ["/absolute/path/to/claude-multi-starter/mcp/send-tool/server.py"]
+      "args": ["/absolute/path/to/claude-multi-worker/mcp/send-tool/server.py"]
     }
   }
 }
@@ -98,7 +98,7 @@ If you see `[!] Warning: MCP server configuration failed`, check:
 
 ### Message Not Delivered
 
-1. Check tab mapping exists: `.cms_config/tab_mapping.json`
+1. Check tab mapping exists: `.cmw_config/tab_mapping.json`
 2. Verify target instance is running
 3. Test with command line first: `python send <instance> "test"`
 
@@ -111,9 +111,7 @@ If automatic configuration doesn't work, manually edit `~/.config/claude/config.
   "mcpServers": {
     "send-tool": {
       "command": "python",
-      "args": [
-        "E:\\ai_project\\claude-multi-starter\\mcp\\send-tool\\server.py"
-      ]
+      "args": ["E:\\ai_project\\claude-multi-worker\\mcp\\send-tool\\server.py"]
     }
   }
 }

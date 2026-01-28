@@ -1,16 +1,23 @@
 """Windows compatibility utilities"""
+
 from __future__ import annotations
 
 import locale
 import os
 import sys
 
+
 def setup_windows_encoding():
     """Configure UTF-8 encoding for Windows console"""
     if sys.platform == "win32":
         import io
-        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
-        sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
+
+        sys.stdout = io.TextIOWrapper(
+            sys.stdout.buffer, encoding="utf-8", errors="replace"
+        )
+        sys.stderr = io.TextIOWrapper(
+            sys.stderr.buffer, encoding="utf-8", errors="replace"
+        )
 
 
 def decode_stdin_bytes(data: bytes) -> str:
@@ -24,7 +31,7 @@ def decode_stdin_bytes(data: bytes) -> str:
       4) Windows fallback: mbcs (ANSI code page).
       5) Last resort: UTF-8 with replacement.
 
-    Users can override via CMS_STDIN_ENCODING.
+    Users can override via CMW_STDIN_ENCODING.
     """
     if not data:
         return ""
@@ -37,7 +44,7 @@ def decode_stdin_bytes(data: bytes) -> str:
     if data.startswith(b"\xfe\xff"):
         return data[2:].decode("utf-16be", errors="strict")
 
-    forced = (os.environ.get("CMS_STDIN_ENCODING") or "").strip()
+    forced = (os.environ.get("CMW_STDIN_ENCODING") or "").strip()
     if forced:
         try:
             return data.decode(forced, errors="strict")

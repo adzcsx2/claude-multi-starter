@@ -7,7 +7,7 @@ Usage:
     python run.py
 
 Description:
-    Read configuration from cms.config and launch all instances with autostart: true
+    Read configuration from cmw.config and launch all instances with autostart: true
 """
 
 import sys
@@ -164,7 +164,7 @@ def set_tab_title(wezterm_bin, pane_id, title):
 
 def create_tab_mapping(work_dir, instance_tabs):
     """Create tab mapping file"""
-    config_dir = work_dir / ".cms_config"
+    config_dir = work_dir / ".cmw_config"
     config_dir.mkdir(exist_ok=True)
 
     mapping_file = config_dir / "tab_mapping.json"
@@ -205,7 +205,7 @@ def is_in_wezterm():
 
 def main():
     # Load configuration
-    from cms_start_config import load_start_config
+    from cmw_start_config import load_start_config
 
     work_dir = Path.cwd()
 
@@ -223,7 +223,7 @@ def main():
 
     if not autostart_instances:
         print("[!] No instances configured for autostart")
-        print("[!] Please set autostart: true in cms.config")
+        print("[!] Please set autostart: true in cmw.config")
         return 1
 
     instance_ids = [inst.id for inst in autostart_instances]

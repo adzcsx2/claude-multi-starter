@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """
-WezTerm detector for CMS startup scripts
+WezTerm detector for CMW startup scripts
 
 This module provides reliable WezTerm detection without relying on wezterm cli.
 """
 import os
 import sys
 from pathlib import Path
+
 
 def is_wezterm() -> bool:
     """
@@ -33,8 +34,8 @@ def is_wezterm() -> bool:
             import ctypes
             from ctypes import wintypes
 
-            kernel32 = ctypes.WinDLL('kernel32', use_last_error=True)
-            psapi = ctypes.WinDLL('psapi', use_last_error=True)
+            kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+            psapi = ctypes.WinDLL("psapi", use_last_error=True)
 
             # Get current process ID
             pid = os.getpid()
@@ -75,6 +76,7 @@ def is_wezterm() -> bool:
     # Method 4: Try wezterm cli commands as last resort
     try:
         import subprocess
+
         # Try different commands
         for cmd in [["wezterm", "cli", "list"], ["wezterm", "cli", "list-clients"]]:
             try:
@@ -93,11 +95,9 @@ def get_wezterm_version() -> str | None:
     """Get WezTerm version if available"""
     try:
         import subprocess
+
         result = subprocess.run(
-            ["wezterm", "--version"],
-            capture_output=True,
-            text=True,
-            timeout=2
+            ["wezterm", "--version"], capture_output=True, text=True, timeout=2
         )
         if result.returncode == 0:
             return result.stdout.strip()
@@ -120,7 +120,9 @@ def main():
     else:
         print("[FAIL] Not running in WezTerm")
         print("\nDetection details:")
-        print(f"  WEZTERM_EXECUTABLE: {os.environ.get('WEZTERM_EXECUTABLE', 'not set')}")
+        print(
+            f"  WEZTERM_EXECUTABLE: {os.environ.get('WEZTERM_EXECUTABLE', 'not set')}"
+        )
         print(f"  WEZTERM_PANE: {os.environ.get('WEZTERM_PANE', 'not set')}")
         print(f"  TERM: {os.environ.get('TERM', 'not set')}")
         return 1

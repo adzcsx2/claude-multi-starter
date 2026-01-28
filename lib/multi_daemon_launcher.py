@@ -1,13 +1,13 @@
 """
-CMS Multi-Daemon Multi-Pane Patch
+CMW Multi-Daemon Multi-Pane Patch
 
 Adds support for launching multiple Claude instances simultaneously
 with adaptive grid layout.
 
 Usage:
-    cms claude                          # Auto-launch all configured instances
-    cms claude ui,coder,test            # Launch specific instances
-    cms claude:ui,coder                 # Alternative syntax
+    cmw claude                          # Auto-launch all configured instances
+    cmw claude ui,coder,test            # Launch specific instances
+    cmw claude:ui,coder                 # Alternative syntax
 
 Compatible with:
 - tmux
@@ -25,7 +25,7 @@ from dataclasses import dataclass
 script_dir = Path(__file__).resolve().parent
 sys.path.insert(0, str(script_dir / "lib"))
 
-from cms_start_config import load_start_config, ClaudeInstanceConfig
+from cmw_start_config import load_start_config, ClaudeInstanceConfig
 from providers import get_claude_instance, list_claude_instances
 from multi_instance_layout import (
     calculate_grid_layout,
@@ -132,13 +132,13 @@ def create_instance_launch_specs(instance_ids: List[str]) -> List[ClaudeInstance
 
         # Create title
         if instance_id == "default":
-            title = f"CMS-Claude"
+            title = f"CMW-Claude"
         else:
-            title = f"CMS-Claude-{instance_id.capitalize()}"
+            title = f"CMW-Claude-{instance_id.capitalize()}"
 
         # Environment overrides
         env_overrides = {
-            "CMS_CLAUDE_INSTANCE": instance_id,
+            "CMW_CLAUDE_INSTANCE": instance_id,
         }
 
         launch = ClaudeInstanceLaunch(

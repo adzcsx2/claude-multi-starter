@@ -33,7 +33,7 @@ class ClaudeInstanceSpec:
     role: str = ""
     session_filename: str = ".claude-session"
     daemon_key: str = "claude"
-    protocol_prefix: str = "cms"
+    protocol_prefix: str = "cmw"
 
     @property
     def state_file_name(self) -> str:
@@ -60,29 +60,29 @@ class ClaudeInstanceSpec:
     def idle_timeout_env(self) -> str:
         """Instance-specific idle timeout env var"""
         if self.instance_id == "default":
-            return "CMS_CLAUDE_IDLE_TIMEOUT_S"
-        return f"CMS_CLAUDE_{self.instance_id.upper()}_IDLE_TIMEOUT_S"
+            return "CMW_CLAUDE_IDLE_TIMEOUT_S"
+        return f"CMW_CLAUDE_{self.instance_id.upper()}_IDLE_TIMEOUT_S"
 
     @property
     def enabled_env(self) -> str:
         """Instance-specific enabled env var"""
         if self.instance_id == "default":
-            return "CMS_CLAUDE"
-        return f"CMS_CLAUDE_{self.instance_id.upper()}"
+            return "CMW_CLAUDE"
+        return f"CMW_CLAUDE_{self.instance_id.upper()}"
 
     @property
     def autostart_env_primary(self) -> str:
         """Instance-specific autostart env var"""
         if self.instance_id == "default":
-            return "CMS_CLAUDE_AUTOSTART"
-        return f"CMS_CLAUDE_{self.instance_id.upper()}_AUTOSTART"
+            return "CMW_CLAUDE_AUTOSTART"
+        return f"CMW_CLAUDE_{self.instance_id.upper()}_AUTOSTART"
 
     @property
     def state_file_env(self) -> str:
         """Instance-specific state file env var"""
         if self.instance_id == "default":
-            return "CMS_CLAUDE_STATE_FILE"
-        return f"CMS_CLAUDE_{self.instance_id.upper()}_STATE_FILE"
+            return "CMW_CLAUDE_STATE_FILE"
+        return f"CMW_CLAUDE_{self.instance_id.upper()}_STATE_FILE"
 
 
 # Global registry of Claude instances
@@ -132,9 +132,9 @@ def _auto_load_claude_instances():
         from pathlib import Path
 
         config_paths = [
-            Path.cwd() / "cms.config",
-            Path.cwd() / ".cms_config" / "cms.config",
-            Path.home() / ".cms" / "cms.config",
+            Path.cwd() / "cmw.config",
+            Path.cwd() / ".cmw_config" / "cmw.config",
+            Path.home() / ".cmw" / "cmw.config",
         ]
 
         for config_path in config_paths:

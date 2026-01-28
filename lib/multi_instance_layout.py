@@ -1,5 +1,5 @@
 """
-Multi-Instance Layout Manager for CMS
+Multi-Instance Layout Manager for CMW
 
 Handles grid layout calculation for multiple Claude instances.
 Supports adaptive layouts: 2x2, 3x2, 4x2, etc.
@@ -12,6 +12,7 @@ from typing import List, Tuple
 @dataclass
 class GridLayout:
     """Grid layout specification"""
+
     rows: int
     cols: int
     positions: List[Tuple[int, int]]  # [(row, col), ...]
@@ -68,6 +69,7 @@ def calculate_grid_layout(instance_count: int) -> GridLayout:
 
     # For 9+ instances, use roughly square grid
     import math
+
     cols = math.ceil(math.sqrt(instance_count))
     rows = math.ceil(instance_count / cols)
     positions = [(i // cols, i % cols) for i in range(instance_count)]

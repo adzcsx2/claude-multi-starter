@@ -22,12 +22,12 @@ project_root = script_dir.parent
 
 
 def load_config():
-    """Read tab mapping from .cms_config/tab_mapping.json"""
+    """Read tab mapping from .cmw_config/tab_mapping.json"""
     # Read config from current working directory
     work_dir = Path.cwd()
 
     # Read tab mapping file
-    tab_mapping_file = work_dir / ".cms_config" / "tab_mapping.json"
+    tab_mapping_file = work_dir / ".cmw_config" / "tab_mapping.json"
     if tab_mapping_file.exists():
         try:
             with open(tab_mapping_file, "r", encoding="utf-8") as f:
@@ -43,11 +43,11 @@ def load_config():
         except Exception:
             pass
 
-    # Fallback: read sequential mapping from cms.config
+    # Fallback: read sequential mapping from cmw.config
     config_paths = [
-        work_dir / "cms.config",
-        work_dir / ".cms_config" / "cms.config",
-        Path.home() / ".cms" / "cms.config",
+        work_dir / "cmw.config",
+        work_dir / ".cmw_config" / "cmw.config",
+        Path.home() / ".cmw" / "cmw.config",
     ]
 
     for config_file in config_paths:

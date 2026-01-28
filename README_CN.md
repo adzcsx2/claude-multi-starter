@@ -1,4 +1,4 @@
-# Claude Multi Starter
+# Claude Multi Worker
 
 ![项目示例](images/example.png)
 
@@ -19,14 +19,14 @@
 
 - 🚀 **多实例启动** - 一键在 WezTerm 标签页中启动多个 Claude 实例
 - 💬 **实例通信** - 使用 `send` 命令在实例间发送消息
-- ⚡️ **灵活配置** - 通过 `cms.config` 自定义实例数量和角色
+- ⚡️ **灵活配置** - 通过 `cmw.config` 自定义实例数量和角色
 - 📍 **自动映射** - 自动保存实例到标签页的映射关系
 
 ## 🚀 快速开始
 
 ### 1. 配置实例
 
-编辑 `cms.config` 定义你需要的实例：
+编辑 `cmw.config` 定义你需要的实例：
 
 ```json
 {
@@ -55,11 +55,11 @@ python run.py
 
 脚本会自动：
 
-- 从 `cms.config` 读取配置
+- 从 `cmw.config` 读取配置
 - 启动所有 `autostart: true` 的实例
 - 在 WezTerm 中创建多个标签页
 - 每个标签页启动一个 Claude 实例
-- 保存映射关系到 `.cms_config/tab_mapping.json`
+- 保存映射关系到 `.cmw_config/tab_mapping.json`
 
 ### 3. 实例间通信
 
@@ -113,12 +113,12 @@ Claude 会自动使用 `send_message` 工具与其他实例通信。
 ## 📂 项目结构
 
 ```
-claude-multi-starter/
-├── .cms_config/
+claude-multi-worker/
+├── .cmw_config/
 │   ├── tab_mapping.json        # 标签页映射（自动生成）
 │   └── .claude-*-session       # 各实例会话文件
 ├── lib/                        # 核心库文件
-├── cms.config                  # 实例配置文件
+├── cmw.config                  # 实例配置文件
 ├── run.py                      # 启动脚本
 ├── send                        # 通信脚本
 ├── README.md                   # 英文文档
@@ -137,7 +137,7 @@ claude-multi-starter/
 
 ### 自定义实例
 
-根据需求修改 `cms.config`：
+根据需求修改 `cmw.config`：
 
 ```json
 {
@@ -154,7 +154,7 @@ claude-multi-starter/
 
 ### 映射文件
 
-启动后自动生成 `.cms_config/tab_mapping.json`：
+启动后自动生成 `.cmw_config/tab_mapping.json`：
 
 ```json
 {
@@ -180,7 +180,7 @@ claude-multi-starter/
 
 ### 消息发送失败
 
-1. 确认映射文件存在：`.cms_config/tab_mapping.json`
+1. 确认映射文件存在：`.cmw_config/tab_mapping.json`
 2. 重新启动实例刷新映射
 3. 检查实例 ID 是否正确（区分大小写）
 4. **禁用 Claude Skills 冲突**：如果你在 Claude 配置中有自定义 skills（如 `ask`、`send`、`ping` 等），它们可能与本项目的 MCP 工具冲突。请在 `~/.config/claude/config.json` 中删除或重命名冲突的 skills

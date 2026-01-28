@@ -1,4 +1,4 @@
-# Claude Multi Starter
+# Claude Multi Worker
 
 ![Project Example](images/example.png)
 
@@ -19,14 +19,14 @@ Before using this tool, ensure you have:
 
 - 🚀 **Multi-Instance Launch** - Start multiple Claude instances in WezTerm tabs with one command
 - 💬 **Instance Communication** - Send messages between instances using the `send` command
-- ⚡️ **Flexible Configuration** - Customize instance count and roles via `cms.config`
+- ⚡️ **Flexible Configuration** - Customize instance count and roles via `cmw.config`
 - 📍 **Auto Mapping** - Automatically save instance-to-tab mappings
 
 ## 🚀 Quick Start
 
 ### 1. Configure Instances
 
-Edit `cms.config` to define your instances:
+Edit `cmw.config` to define your instances:
 
 ```json
 {
@@ -55,11 +55,11 @@ python run.py
 
 The script will automatically:
 
-- Read configuration from `cms.config`
+- Read configuration from `cmw.config`
 - Launch all instances with `autostart: true`
 - Create multiple WezTerm tabs
 - Start a Claude instance in each tab
-- Save mappings to `.cms_config/tab_mapping.json`
+- Save mappings to `.cmw_config/tab_mapping.json`
 
 ### 3. Send Messages Between Instances
 
@@ -113,12 +113,12 @@ Claude will automatically use the `send_message` tool to communicate with other 
 ## 📂 Project Structure
 
 ```
-claude-multi-starter/
-├── .cms_config/
+claude-multi-worker/
+├── .cmw_config/
 │   ├── tab_mapping.json        # Tab mappings (auto-generated)
 │   └── .claude-*-session       # Session files for each instance
 ├── lib/                        # Core library files
-├── cms.config                  # Instance configuration
+├── cmw.config                  # Instance configuration
 ├── run.py                      # Launch script
 ├── send                        # Communication script
 ├── README.md                   # This document
@@ -137,7 +137,7 @@ claude-multi-starter/
 
 ### Custom Instances
 
-Modify `cms.config` based on your needs:
+Modify `cmw.config` based on your needs:
 
 ```json
 {
@@ -154,7 +154,7 @@ Modify `cms.config` based on your needs:
 
 ### Mapping File
 
-Auto-generated at `.cms_config/tab_mapping.json`:
+Auto-generated at `.cmw_config/tab_mapping.json`:
 
 ```json
 {
@@ -180,7 +180,7 @@ The `send` command reads pane IDs from this file to route messages to specific t
 
 ### Message Send Failure
 
-1. Confirm mapping file exists: `.cms_config/tab_mapping.json`
+1. Confirm mapping file exists: `.cmw_config/tab_mapping.json`
 2. Restart instances to refresh mappings
 3. Check instance ID is correct (case-sensitive)
 4. **Disable Claude Skills conflicts**: If you have custom skills like `ask`, `send`, or `ping` in your Claude configuration, they may conflict with this project's MCP tools. Remove or rename conflicting skills in `~/.config/claude/config.json`

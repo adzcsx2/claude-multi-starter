@@ -24,7 +24,7 @@ docs/
 tests/
 
 # Configuration and session files
-.cms_config/
+.cmw_config/
 .claude-session
 .claude-*-session
 .claude/

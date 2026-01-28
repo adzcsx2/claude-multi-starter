@@ -47,6 +47,7 @@ def _run(*args, **kwargs):
     """Wrapper for subprocess.run that adds hidden window on Windows."""
     kwargs.update(_subprocess_kwargs())
     import subprocess as _sp
+
     return _sp.run(*args, **kwargs)
 
 
@@ -66,7 +67,7 @@ def _choose_wezterm_cli_cwd() -> str | None:
     which can confuse WezTerm's WSL relay and produce noisy `chdir(/wsl.localhost/...) failed 2`.
     Using a Windows-mounted path like /mnt/c avoids that.
     """
-    override = (os.environ.get("CMS_WEZTERM_CLI_CWD") or "").strip()
+    override = (os.environ.get("CMW_WEZTERM_CLI_CWD") or "").strip()
     candidates = [override] if override else []
     candidates.extend(["/mnt/c", "/mnt/d", "/mnt"])
     for candidate in candidates:
@@ -94,7 +95,11 @@ def _extract_wsl_path_from_unc_like_path(raw: str) -> str | None:
     if not raw:
         return None
 
-    m = re.match(r'^(?:[/\\]{1,2})(?:wsl\.localhost|wsl\$)[/\\]([^/\\]+)(.*)$', raw, re.IGNORECASE)
+    m = re.match(
+        r"^(?:[/\\]{1,2})(?:wsl\.localhost|wsl\$)[/\\]([^/\\]+)(.*)$",
+        raw,
+        re.IGNORECASE,
+    )
     if not m:
         return None
     remainder = m.group(2).replace("\\", "/")
@@ -110,21 +115,23 @@ def _load_cached_wezterm_bin() -> str | None:
     candidates: list[Path] = []
     xdg = (os.environ.get("XDG_CONFIG_HOME") or "").strip()
     if xdg:
-        candidates.append(Path(xdg) / "cms" / "env")
+        candidates.append(Path(xdg) / "cmw" / "env")
     if os.name == "nt":
         localappdata = (os.environ.get("LOCALAPPDATA") or "").strip()
         if localappdata:
-            candidates.append(Path(localappdata) / "cms" / "env")
+            candidates.append(Path(localappdata) / "cmw" / "env")
         appdata = (os.environ.get("APPDATA") or "").strip()
         if appdata:
-            candidates.append(Path(appdata) / "cms" / "env")
-    candidates.append(Path.home() / ".config" / "cms" / "env")
+            candidates.append(Path(appdata) / "cmw" / "env")
+    candidates.append(Path.home() / ".config" / "cmw" / "env")
 
     for config in candidates:
         try:
             if not config.exists():
                 continue
-            for line in config.read_text(encoding="utf-8", errors="replace").splitlines():
+            for line in config.read_text(
+                encoding="utf-8", errors="replace"
+            ).splitlines():
                 if line.startswith("CODEX_WEZTERM_BIN="):
                     path = line.split("=", 1)[1].strip()
                     if path and Path(path).exists():
@@ -157,8 +164,10 @@ def _get_wezterm_bin() -> str | None:
         return found
     if is_wsl():
         for drive in "cdefghijklmnopqrstuvwxyz":
-            for path in [f"/mnt/{drive}/Program Files/WezTerm/wezterm.exe",
-                         f"/mnt/{drive}/Program Files (x86)/WezTerm/wezterm.exe"]:
+            for path in [
+                f"/mnt/{drive}/Program Files/WezTerm/wezterm.exe",
+                f"/mnt/{drive}/Program Files (x86)/WezTerm/wezterm.exe",
+            ]:
                 if Path(path).exists():
                     _cached_wezterm_bin = path
                     return path
@@ -175,8 +184,10 @@ def _is_windows_wezterm() -> bool:
         return True
     if is_wsl():
         for drive in "cdefghijklmnopqrstuvwxyz":
-            for path in [f"/mnt/{drive}/Program Files/WezTerm/wezterm.exe",
-                         f"/mnt/{drive}/Program Files (x86)/WezTerm/wezterm.exe"]:
+            for path in [
+                f"/mnt/{drive}/Program Files/WezTerm/wezterm.exe",
+                f"/mnt/{drive}/Program Files (x86)/WezTerm/wezterm.exe",
+            ]:
                 if Path(path).exists():
                     return True
     return False
@@ -194,7 +205,7 @@ def _default_shell() -> tuple[str, str]:
 
 
 def get_shell_type() -> str:
-    if is_windows() and os.environ.get("CMS_BACKEND_ENV", "").lower() == "wsl":
+    if is_windows() and os.environ.get("CMW_BACKEND_ENV", "").lower() == "wsl":
         return "bash"
     shell, _ = _default_shell()
     if shell in ("pwsh", "powershell"):
@@ -212,22 +223,41 @@ class TerminalBackend(ABC):
     @abstractmethod
     def activate(self, pane_id: str) -> None: ...
     @abstractmethod
-    def create_pane(self, cmd: str, cwd: str, direction: str = "right", percent: int = 50, parent_pane: Optional[str] = None) -> str: ...
+    def create_pane(
+        self,
+        cmd: str,
+        cwd: str,
+        direction: str = "right",
+        percent: int = 50,
+        parent_pane: Optional[str] = None,
+    ) -> str: ...
 
 
 class WeztermBackend(TerminalBackend):
     _wezterm_bin: Optional[str] = None
-    CMS_TITLE_MARKER = "CMS"
+    CMW_TITLE_MARKER = "CMW"
 
     @classmethod
     def _cli_base_args(cls) -> list[str]:
         args = [cls._bin(), "cli"]
-        wezterm_class = os.environ.get("CODEX_WEZTERM_CLASS") or os.environ.get("WEZTERM_CLASS")
+        wezterm_class = os.environ.get("CODEX_WEZTERM_CLASS") or os.environ.get(
+            "WEZTERM_CLASS"
+        )
         if wezterm_class:
             args.extend(["--class", wezterm_class])
-        if os.environ.get("CODEX_WEZTERM_PREFER_MUX", "").lower() in {"1", "true", "yes", "on"}:
+        if os.environ.get("CODEX_WEZTERM_PREFER_MUX", "").lower() in {
+            "1",
+            "true",
+            "yes",
+            "on",
+        }:
             args.append("--prefer-mux")
-        if os.environ.get("CODEX_WEZTERM_NO_AUTO_START", "").lower() in {"1", "true", "yes", "on"}:
+        if os.environ.get("CODEX_WEZTERM_NO_AUTO_START", "").lower() in {
+            "1",
+            "true",
+            "yes",
+            "on",
+        }:
             args.append("--no-auto-start")
         return args
 
@@ -258,7 +288,14 @@ class WeztermBackend(TerminalBackend):
         for variant in variants:
             # Variant A: `send-key --pane-id <id> --key <KeyName>`
             result = _run(
-                [*self._cli_base_args(), "send-key", "--pane-id", pane_id, "--key", variant],
+                [
+                    *self._cli_base_args(),
+                    "send-key",
+                    "--pane-id",
+                    pane_id,
+                    "--key",
+                    variant,
+                ],
                 capture_output=True,
                 timeout=2.0,
             )
@@ -285,11 +322,11 @@ class WeztermBackend(TerminalBackend):
         """
         # Windows needs longer delay
         default_delay = 0.05 if os.name == "nt" else 0.01
-        enter_delay = _env_float("CMS_WEZTERM_ENTER_DELAY", default_delay)
+        enter_delay = _env_float("CMW_WEZTERM_ENTER_DELAY", default_delay)
         if enter_delay:
             time.sleep(enter_delay)
 
-        env_method_raw = os.environ.get("CMS_WEZTERM_ENTER_METHOD")
+        env_method_raw = os.environ.get("CMW_WEZTERM_ENTER_METHOD")
         # Default behavior is intentionally unchanged on non-Windows platforms:
         # previously we used `send-text` with a CR byte; keep that unless the user overrides.
         default_method = "auto" if os.name == "nt" else "text"
@@ -301,7 +338,7 @@ class WeztermBackend(TerminalBackend):
         max_retries = 3
         for attempt in range(max_retries):
             # Only enable "auto key" behavior by default on native Windows.
-            # Users can force key injection everywhere via CMS_WEZTERM_ENTER_METHOD=key.
+            # Users can force key injection everywhere via CMW_WEZTERM_ENTER_METHOD=key.
             if method == "key" or (method == "auto" and os.name == "nt"):
                 if self._send_key_cli(pane_id, "Enter"):
                     return
@@ -309,7 +346,13 @@ class WeztermBackend(TerminalBackend):
             # Fallback: send CR byte; works for shells/readline, but not for all raw-mode TUIs.
             if method in {"auto", "text", "key"}:
                 result = _run(
-                    [*self._cli_base_args(), "send-text", "--pane-id", pane_id, "--no-paste"],
+                    [
+                        *self._cli_base_args(),
+                        "send-text",
+                        "--pane-id",
+                        pane_id,
+                        "--no-paste",
+                    ],
                     input=b"\r",
                     capture_output=True,
                 )
@@ -331,12 +374,25 @@ class WeztermBackend(TerminalBackend):
         if not has_newlines:
             if len(sanitized) <= 200:
                 _run(
-                    [*self._cli_base_args(), "send-text", "--pane-id", pane_id, "--no-paste", sanitized],
+                    [
+                        *self._cli_base_args(),
+                        "send-text",
+                        "--pane-id",
+                        pane_id,
+                        "--no-paste",
+                        sanitized,
+                    ],
                     check=True,
                 )
             else:
                 _run(
-                    [*self._cli_base_args(), "send-text", "--pane-id", pane_id, "--no-paste"],
+                    [
+                        *self._cli_base_args(),
+                        "send-text",
+                        "--pane-id",
+                        pane_id,
+                        "--no-paste",
+                    ],
                     input=sanitized.encode("utf-8"),
                     check=True,
                 )
@@ -351,7 +407,7 @@ class WeztermBackend(TerminalBackend):
         )
 
         # Wait for TUI to process bracketed paste content
-        paste_delay = _env_float("CMS_WEZTERM_PASTE_DELAY", 0.1)
+        paste_delay = _env_float("CMW_WEZTERM_PASTE_DELAY", 0.1)
         if paste_delay:
             time.sleep(paste_delay)
 
@@ -423,7 +479,13 @@ class WeztermBackend(TerminalBackend):
             if self._send_key_cli(pane_id, key):
                 return True
             result = _run(
-                [*self._cli_base_args(), "send-text", "--pane-id", pane_id, "--no-paste"],
+                [
+                    *self._cli_base_args(),
+                    "send-text",
+                    "--pane-id",
+                    pane_id,
+                    "--no-paste",
+                ],
                 input=key.encode("utf-8"),
                 capture_output=True,
                 timeout=2.0,
@@ -433,27 +495,54 @@ class WeztermBackend(TerminalBackend):
             return False
 
     def kill_pane(self, pane_id: str) -> None:
-        _run([*self._cli_base_args(), "kill-pane", "--pane-id", pane_id], stderr=subprocess.DEVNULL)
+        _run(
+            [*self._cli_base_args(), "kill-pane", "--pane-id", pane_id],
+            stderr=subprocess.DEVNULL,
+        )
 
     def activate(self, pane_id: str) -> None:
         _run([*self._cli_base_args(), "activate-pane", "--pane-id", pane_id])
 
-    def create_pane(self, cmd: str, cwd: str, direction: str = "right", percent: int = 50, parent_pane: Optional[str] = None) -> str:
+    def create_pane(
+        self,
+        cmd: str,
+        cwd: str,
+        direction: str = "right",
+        percent: int = 50,
+        parent_pane: Optional[str] = None,
+    ) -> str:
         args = [*self._cli_base_args(), "split-pane"]
-        force_wsl = os.environ.get("CMS_BACKEND_ENV", "").lower() == "wsl"
+        force_wsl = os.environ.get("CMW_BACKEND_ENV", "").lower() == "wsl"
         wsl_unc_cwd = _extract_wsl_path_from_unc_like_path(cwd)
         # If the caller is in a WSL UNC path (e.g. Git Bash `/wsl.localhost/...`),
         # default to launching via wsl.exe so the new pane lands in the real WSL path.
         if is_windows() and wsl_unc_cwd and not force_wsl:
             force_wsl = True
-        use_wsl_launch = (is_wsl() and _is_windows_wezterm()) or (force_wsl and is_windows())
+        use_wsl_launch = (is_wsl() and _is_windows_wezterm()) or (
+            force_wsl and is_windows()
+        )
         if use_wsl_launch:
-            in_wsl_pane = bool(os.environ.get("WSL_DISTRO_NAME") or os.environ.get("WSL_INTEROP"))
+            in_wsl_pane = bool(
+                os.environ.get("WSL_DISTRO_NAME") or os.environ.get("WSL_INTEROP")
+            )
             wsl_cwd = wsl_unc_cwd or cwd
-            if wsl_unc_cwd is None and ("\\" in cwd or (len(cwd) > 2 and cwd[1] == ":")):
+            if wsl_unc_cwd is None and (
+                "\\" in cwd or (len(cwd) > 2 and cwd[1] == ":")
+            ):
                 try:
-                    wslpath_cmd = ["wslpath", "-a", cwd] if is_wsl() else ["wsl.exe", "wslpath", "-a", cwd]
-                    result = _run(wslpath_cmd, capture_output=True, text=True, check=True, encoding="utf-8", errors="replace")
+                    wslpath_cmd = (
+                        ["wslpath", "-a", cwd]
+                        if is_wsl()
+                        else ["wsl.exe", "wslpath", "-a", cwd]
+                    )
+                    result = _run(
+                        wslpath_cmd,
+                        capture_output=True,
+                        text=True,
+                        check=True,
+                        encoding="utf-8",
+                        errors="replace",
+                    )
                     wsl_cwd = result.stdout.strip()
                 except Exception:
                     pass
@@ -496,7 +585,9 @@ class WeztermBackend(TerminalBackend):
             )
             return result.stdout.strip()
         except subprocess.CalledProcessError as e:
-            raise RuntimeError(f"WezTerm split-pane failed:\nCommand: {' '.join(args)}\nStderr: {e.stderr}") from e
+            raise RuntimeError(
+                f"WezTerm split-pane failed:\nCommand: {' '.join(args)}\nStderr: {e.stderr}"
+            ) from e
 
 
 _backend_cache: Optional[TerminalBackend] = None
@@ -639,7 +730,7 @@ def get_pane_id_from_session(session_data: dict) -> Optional[str]:
 
 @dataclass(frozen=True)
 class LayoutResult:
-    panes: dict[str, str]      # provider -> pane_id
+    panes: dict[str, str]  # provider -> pane_id
     root_pane_id: str
     needs_attach: bool
     created_panes: list[str]
@@ -653,7 +744,7 @@ def create_auto_layout(
     tmux_session_name: str | None = None,
     percent: int = 50,
     set_markers: bool = True,
-    marker_prefix: str = "CMS",
+    marker_prefix: str = "CMW",
 ) -> LayoutResult:
     """
     Create tmux split layout for 1–4 providers, returning a provider->pane_id mapping.
@@ -689,13 +780,26 @@ def create_auto_layout(
             root = backend.get_current_pane_id()
         except Exception:
             # Daemon/outside tmux: create a detached session as a container.
-            session_name = (tmux_session_name or f"cms-{Path(cwd).name}-{int(time.time()) % 100000}-{os.getpid()}").strip()
+            session_name = (
+                tmux_session_name
+                or f"cmw-{Path(cwd).name}-{int(time.time()) % 100000}-{os.getpid()}"
+            ).strip()
             if session_name:
                 # Reuse if already exists; else create.
                 if not backend.is_alive(session_name):
-                    backend._tmux_run(["new-session", "-d", "-s", session_name, "-c", cwd], check=True)
-                cp = backend._tmux_run(["list-panes", "-t", session_name, "-F", "#{pane_id}"], capture=True, check=True)
-                root = (cp.stdout or "").splitlines()[0].strip() if (cp.stdout or "").strip() else ""
+                    backend._tmux_run(
+                        ["new-session", "-d", "-s", session_name, "-c", cwd], check=True
+                    )
+                cp = backend._tmux_run(
+                    ["list-panes", "-t", session_name, "-F", "#{pane_id}"],
+                    capture=True,
+                    check=True,
+                )
+                root = (
+                    (cp.stdout or "").splitlines()[0].strip()
+                    if (cp.stdout or "").strip()
+                    else ""
+                )
             else:
                 root = backend.create_pane("", cwd)
             if not root or not root.startswith("%"):
@@ -714,7 +818,12 @@ def create_auto_layout(
     _mark(providers[0], root)
 
     if len(providers) == 1:
-        return LayoutResult(panes=panes, root_pane_id=root, needs_attach=needs_attach, created_panes=created)
+        return LayoutResult(
+            panes=panes,
+            root_pane_id=root,
+            needs_attach=needs_attach,
+            created_panes=created,
+        )
 
     pct = max(1, min(99, int(percent)))
 
@@ -723,7 +832,12 @@ def create_auto_layout(
         created.append(right)
         panes[providers[1]] = right
         _mark(providers[1], right)
-        return LayoutResult(panes=panes, root_pane_id=root, needs_attach=needs_attach, created_panes=created)
+        return LayoutResult(
+            panes=panes,
+            root_pane_id=root,
+            needs_attach=needs_attach,
+            created_panes=created,
+        )
 
     if len(providers) == 3:
         right_top = backend.split_pane(root, "right", pct)
@@ -734,7 +848,12 @@ def create_auto_layout(
         panes[providers[2]] = right_bottom
         _mark(providers[1], right_top)
         _mark(providers[2], right_bottom)
-        return LayoutResult(panes=panes, root_pane_id=root, needs_attach=needs_attach, created_panes=created)
+        return LayoutResult(
+            panes=panes,
+            root_pane_id=root,
+            needs_attach=needs_attach,
+            created_panes=created,
+        )
 
     # 4 providers: 2x2 grid
     right_top = backend.split_pane(root, "right", pct)
@@ -751,4 +870,6 @@ def create_auto_layout(
     _mark(providers[2], left_bottom)
     _mark(providers[3], right_bottom)
 
-    return LayoutResult(panes=panes, root_pane_id=root, needs_attach=needs_attach, created_panes=created)
+    return LayoutResult(
+        panes=panes, root_pane_id=root, needs_attach=needs_attach, created_panes=created
+    )
