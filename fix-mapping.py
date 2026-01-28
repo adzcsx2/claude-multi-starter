@@ -33,13 +33,23 @@ try:
         [wezterm, "cli", "list", "--format", "json"],
         capture_output=True,
         text=True,
+        encoding='utf-8',
+        errors='ignore',  # 忽略编码错误
         timeout=5
     )
     
     if result.returncode != 0:
         print("[ERROR] Failed to get pane list from WezTerm")
-        print(f"Error: {result.stderr}")
-        print("\nMake sure WezTerm is running with at least 3 windows/tabs")
+        if result.stderr:
+            print(f"Error: {result.stderr}")
+        print("\nMake sure WezTerm is running in the SAME window with multiple tabs")
+        print("Current windows must use tabs (Ctrl+Shift+T), not separate processes")
+        exit(1)
+    
+    if not result.stdout:
+        print("[ERROR] No output from wezterm cli list")
+        print("This usually means WezTerm windows are separate processes")
+        print("\nSolution: Open ONE WezTerm window, create tabs with Ctrl+Shift+T")
         exit(1)
     
     panes = []
