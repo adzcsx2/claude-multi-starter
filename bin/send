@@ -115,58 +115,68 @@ def main():
         print("Error: Could not load instance configuration", file=sys.stderr)
         return 1
 
+    # 如果实例不在映射中，但是 c1-c12 格式，自动推断 pane_id
     if instance not in role_map:
-        print(f"Error: Unknown instance '{instance}'", file=sys.stderr)
-        print(f"Available: {', '.join(role_map.keys())}", file=sys.stderr)
-        return 1
-
-    target = role_map[instance]
-    target_id = target["id"]
-    target_type = target.get("type", "pane")
+        # 检查是否是 c1, c2, c3... 格式
+        if instance.startswith("c") and instance[1:].isdigit():
+            instance_num = int(instance[1:])
+            if 1 <= instance_num <= 12:
+                target_id = str(instance_num - 1)  # c1 -> pane 0, c2 -> pane 1
+                target_type = "tab"
+            else:
+                print(f"Error: Instance '{instance}' not found", file=sys.stderr)
+                return 1
+        else:
+            print(f"Error: Instance '{instance}' not found", file=sys.stderr)
+            return 1
+    else:
+        target = role_map[instance]
+        target_id = target["id"]
+        target_type = target.get("type", "pane")
 
     try:
-        # Windows Terminal uses different approach - focus and send keys
-        # We'll use a PowerShell script to send text to a specific tab
-
-        # Create a temp PowerShell script
-        script_content = f"""
-$Host.UI.RawUI.WindowTitle = "Sending to {instance}"
-# Focus the target tab and send text
-wt.exe -w 0 focus-tab --target {target_id}
-Start-Sleep -Milliseconds 500
-
-# Send the text character by character (workaround for WT limitation)
-Add-Type -AssemblyName System.Windows.Forms
-[System.Windows.Forms.SendKeys]::SendWait("{message.replace('"', '`"')}")
-[System.Windows.Forms.SendKeys]::SendWait("{{ENTER}}")
-"""
-
-        # Save temp script
-        temp_script = Path.cwd() / ".cms_config" / "temp_send.ps1"
-        temp_script.parent.mkdir(parents=True, exist_ok=True)
-        with open(temp_script, "w", encoding="utf-8") as f:
-            f.write(script_content)
-
-        # Execute PowerShell script
+        # 使用 WezTerm CLI 发送文本
+        # 转义消息中的引号和特殊字符
+        escaped_message = message.replace('"', '\\"').replace('$', '\\$')
+        
+        # 使用 wezterm cli send-text 发送消息
+        cmd = [
+            "wezterm",
+            "cli",
+            "send-text",
+            "--pane-id",
+            target_id,
+            "--no-paste",
+            message + "\r"  # 添加回车符执行命令
+        ]
+        
         result = subprocess.run(
-            ["powershell", "-ExecutionPolicy", "Bypass", "-File", str(temp_script)],
+            cmd,
             capture_output=True,
             text=True,
             timeout=5,
         )
 
         if result.returncode == 0:
-            print(f"[OK] Sent to {instance} (tab {target_id})")
+            print(f"✓ 已发送到 {instance}")
             return 0
         else:
-            print(f"[ERROR] Failed to send: {result.stderr}", file=sys.stderr)
+            error_msg = result.stderr.strip()
+            if "no such pane" in error_msg:
+                print(f"Error: 实例 '{instance}' 未运行", file=sys.stderr)
+                print(f"提示: 请先运行 'python START_MULTI_TAB.py' 启动实例", file=sys.stderr)
+            else:
+                print(f"Error: 发送失败 - {error_msg}", file=sys.stderr)
             return 1
 
     except subprocess.TimeoutExpired:
-        print(f"[ERROR] Timeout sending to {instance}", file=sys.stderr)
+        print(f"Error: 发送超时", file=sys.stderr)
+        return 1
+    except FileNotFoundError:
+        print(f"Error: 未找到 wezterm 命令，请确保 WezTerm 已安装", file=sys.stderr)
         return 1
     except Exception as e:
-        print(f"[ERROR] {e}", file=sys.stderr)
+        print(f"Error: {e}", file=sys.stderr)
         return 1
 
 
