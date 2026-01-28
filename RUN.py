@@ -4,7 +4,7 @@ WezTerm 多标签页启动器
 在一个 WezTerm 窗口中创建多个标签页(tabs),每个运行 Claude 实例
 
 用法:
-    python START_MULTI_TAB.py
+    python RUN.py
 
 说明:
     从 cms.config 读取配置，启动所有 autostart: true 的实例
@@ -185,9 +185,7 @@ def main():
     claude_config = config.claude_config
 
     # 获取需要自动启动的实例
-    autostart_instances = [
-        inst for inst in claude_config.instances if inst.autostart
-    ]
+    autostart_instances = [inst for inst in claude_config.instances if inst.autostart]
 
     if not autostart_instances:
         print("[!] 没有配置自动启动的实例")
@@ -204,7 +202,7 @@ def main():
     flags = config.data.get("flags", {})
     claude_args_list = flags.get("claudeArgs", [])
     claude_args = " ".join(claude_args_list) if claude_args_list else ""
-    
+
     if claude_args:
         print(f"[*] Claude 参数: {claude_args}")
     print(f"[*] 将创建 {len(instance_ids)} 个标签页")
@@ -225,7 +223,7 @@ def main():
     in_wezterm = is_in_wezterm()
 
     if not in_wezterm:
-        print("="  * 60)
+        print("=" * 60)
         print("  ⚠️  请在 WezTerm 终端中运行此脚本")
         print("=" * 60)
         print()
@@ -234,7 +232,7 @@ def main():
         print("步骤:")
         print("  1. 打开 WezTerm 终端")
         print(f"  2. 切换到项目目录: cd {work_dir}")
-        print("  3. 运行: python START_MULTI_TAB.py")
+        print("  3. 运行: python RUN.py")
         print()
         print("=" * 60)
         return 1
@@ -326,7 +324,7 @@ def main():
                     capture_output=True,
                     timeout=5,
                 )
-                
+
                 set_tab_title(
                     wezterm_bin, first_pane_id, f"{first_instance} - {spec.role}"
                 )

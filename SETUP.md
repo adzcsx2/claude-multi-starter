@@ -73,7 +73,7 @@ Pane ID按照配置文件中的instances数组顺序映射：
 
 ### 文件说明
 
-- `START_MULTI_TAB.py` - 启动脚本
+- `RUN.py` - 启动脚本
 - `cms.config` - 实例配置文件（根目录）
 - `bin/send` - 发送消息到指定实例
 - `.cms_config/` - 会话文件和映射文件目录

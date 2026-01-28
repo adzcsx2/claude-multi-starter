@@ -45,7 +45,7 @@
 在 **WezTerm 终端**中运行：
 
 ```bash
-python START_MULTI_TAB.py
+python RUN.py
 ```
 
 脚本会自动：
@@ -106,7 +106,7 @@ claude-multi-starter/
 │   └── send.cmd                # 通信命令（Windows）
 ├── lib/                        # 核心库文件
 ├── cms.config                  # 实例配置文件
-├── START_MULTI_TAB.py          # 启动脚本
+├── RUN.py                      # 启动脚本
 ├── README.md                   # 本文档
 └── SETUP.md                    # 详细设置指南
 ```

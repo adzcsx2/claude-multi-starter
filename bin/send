@@ -137,8 +137,8 @@ def main():
     try:
         # 使用 WezTerm CLI 发送文本
         # 转义消息中的引号和特殊字符
-        escaped_message = message.replace('"', '\\"').replace('$', '\\$')
-        
+        escaped_message = message.replace('"', '\\"').replace("$", "\\$")
+
         # 使用 wezterm cli send-text 发送消息
         cmd = [
             "wezterm",
@@ -147,9 +147,9 @@ def main():
             "--pane-id",
             target_id,
             "--no-paste",
-            message + "\r"  # 添加回车符执行命令
+            message + "\r",  # 添加回车符执行命令
         ]
-        
+
         result = subprocess.run(
             cmd,
             capture_output=True,
@@ -164,7 +164,10 @@ def main():
             error_msg = result.stderr.strip()
             if "no such pane" in error_msg:
                 print(f"Error: 实例 '{instance}' 未运行", file=sys.stderr)
-                print(f"提示: 请先运行 'python START_MULTI_TAB.py' 启动实例", file=sys.stderr)
+                print(
+                    f"提示: 请先运行 'python RUN.py' 启动实例",
+                    file=sys.stderr,
+                )
             else:
                 print(f"Error: 发送失败 - {error_msg}", file=sys.stderr)
             return 1
