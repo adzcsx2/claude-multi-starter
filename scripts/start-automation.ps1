@@ -128,7 +128,7 @@ Write-Host ""
 
 # Set commands based on language (embedded in script)
 if ($isChinese) {
-    # Simple trigger mode - user inputs "继续" to check and execute
+    # Auto-trigger mode - automatically send "继续" to next window
     $c1Cmd = @"
 我是 C1 窗口，负责设计任务。启动自动化模式。
 
@@ -140,8 +140,11 @@ if ($isChinese) {
    - 更新 Current Window 到下一窗口
    - 在 State History 中添加记录
 4. 如果不是 C1 的回合，显示简短等待信息并停止
+5. 完成后自动触发下一个窗口：
+   - 执行命令: python bin/send c2 "继续"
+   - 这会自动触发C2窗口开始工作
 
-【重要】完成后显示："✅ 任务完成！请在 C2 窗口输入：继续"
+【重要】完成后显示："✅ 任务完成！已自动触发 C2 窗口开始工作"
 "@
 
     $c2Cmd = @"
@@ -155,8 +158,11 @@ if ($isChinese) {
    - 更新 Current Window 到下一窗口
    - 在 State History 中添加记录
 4. 如果不是 C2 的回合，显示简短等待信息并停止
+5. 完成后自动触发下一个窗口：
+   - 执行命令: python bin/send c3 "继续"
+   - 这会自动触发C3窗口开始工作
 
-【重要】完成后显示："✅ 任务完成！请在 C3 窗口输入：继续"
+【重要】完成后显示："✅ 任务完成！已自动触发 C3 窗口开始测试"
 "@
 
     $c3Cmd = @"
@@ -170,8 +176,11 @@ if ($isChinese) {
    - 更新 Current Window 到下一窗口
    - 在 State History 中添加记录
 4. 如果不是 C3 的回合，显示简短等待信息并停止
+5. 完成后自动触发下一个窗口：
+   - 执行命令: python bin/send c1 "继续"
+   - 这会自动触发C1窗口开始下一个任务设计
 
-【重要】完成后显示："✅ 任务完成！请在 C1 窗口输入：继续"
+【重要】完成后显示："✅ 任务完成！已自动触发 C1 窗口开始下一个任务"
 "@
 
     $cmdPrompt = "请在 Claude 启动后输入以下命令："
