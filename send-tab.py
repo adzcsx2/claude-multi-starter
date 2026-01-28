@@ -1,13 +1,29 @@
 ﻿#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-直接使用 tab_index 发送消息到 Windows Terminal 标签页
+使用 WezTerm CLI 发送消息到指定窗格
 """
 
 import sys
 import json
 import subprocess
+import shutil
 from pathlib import Path
+
+
+def find_wezterm():
+    """查找 WezTerm 可执行文件"""
+    wezterm = shutil.which("wezterm") or shutil.which("wezterm.exe")
+    if not wezterm:
+        # 尝试常见安装路径
+        common_paths = [
+            Path.home() / "AppData" / "Local" / "Microsoft" / "WindowsApps" / "wezterm.exe",
+            Path("C:/Program Files/WezTerm/wezterm.exe"),
+        ]
+        for path in common_paths:
+            if path.exists():
+                return str(path)
+    return wezterm
 
 
 def load_config():
@@ -38,6 +54,13 @@ def main():
     instance = sys.argv[1].lower()
     message = " ".join(sys.argv[2:])
 
+    # 查找 WezTerm
+    wezterm_bin = find_wezterm()
+    if not wezterm_bin:
+        print("[ERROR] WezTerm not found")
+        print("Please install WezTerm from https://wezfurlong.org/wezterm/")
+        return 1
+
     tabs = load_config()
 
     if not tabs:
@@ -50,37 +73,34 @@ def main():
         return 1
 
     tab_info = tabs[instance]
-    tab_index = tab_info.get("tab_index", tab_info.get("pane_id", "0"))
+    pane_id = tab_info.get("pane_id", tab_info.get("tab_index"))
+
+    if not pane_id:
+        print(f"[ERROR] No pane_id found for {instance}")
+        return 1
 
     try:
-        # Copy message to clipboard using PowerShell
-        # Escape the message for PowerShell
-        escaped_msg = message.replace("'", "''")
-        
-        ps_script = f"""
-# Copy to clipboard
-Set-Clipboard -Value '{escaped_msg}'
-# Focus the target tab
-wt.exe -w 0 focus-tab -t {tab_index}
-"""
+        # 使用 WezTerm CLI 发送文本
+        # 自动添加换行符以模拟按下回车
+        message_with_newline = message + "\n"
         
         result = subprocess.run(
-            ["powershell", "-Command", ps_script],
+            [wezterm_bin, "cli", "send-text", "--pane-id", str(pane_id), "--no-paste", message_with_newline],
             capture_output=True,
             text=True,
-            encoding='utf-8',
             timeout=2,
         )
         
         if result.returncode == 0:
-            print(f"[OK] Focused {instance} (tab {tab_index})")
-            print(f"[INFO] Message copied to clipboard: '{message}'")
-            print(f"[ACTION] Press Ctrl+V in the {instance} window and Enter to send")
+            print(f"[OK] Message sent to {instance} (pane {pane_id}): '{message}'")
             return 0
         else:
-            print(f"[ERROR] Failed: {result.stderr}")
+            print(f"[ERROR] Failed to send message: {result.stderr}")
             return 1
 
+    except subprocess.TimeoutExpired:
+        print(f"[ERROR] Command timeout")
+        return 1
     except Exception as e:
         print(f"[ERROR] {e}")
         return 1

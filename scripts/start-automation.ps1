@@ -14,16 +14,32 @@ Write-Host "============================================================" -Foreg
 Write-Host ""
 
 $PROJECT_DIR = (Get-Location).Path
-$wtPath = Join-Path $env:LOCALAPPDATA "Microsoft\WindowsApps\wt.exe"
 
-if (-not (Test-Path $wtPath)) {
-    Write-Host "[ERROR] Windows Terminal not found" -ForegroundColor Red
-    Write-Host "Please install Windows Terminal from Microsoft Store" -ForegroundColor Yellow
+# Find WezTerm
+$weztermPath = $null
+$weztermPaths = @(
+    (Get-Command wezterm -ErrorAction SilentlyContinue).Source,
+    (Get-Command wezterm.exe -ErrorAction SilentlyContinue).Source,
+    "$env:LOCALAPPDATA\Microsoft\WindowsApps\wezterm.exe",
+    "C:\Program Files\WezTerm\wezterm.exe"
+)
+
+foreach ($path in $weztermPaths) {
+    if ($path -and (Test-Path $path)) {
+        $weztermPath = $path
+        break
+    }
+}
+
+if (-not $weztermPath) {
+    Write-Host "[ERROR] WezTerm not found" -ForegroundColor Red
+    Write-Host "Please install WezTerm from https://wezfurlong.org/wezterm/" -ForegroundColor Yellow
+    Write-Host "Or set WEZTERM_BIN environment variable to wezterm.exe path" -ForegroundColor Yellow
     Read-Host "Press Enter to exit"
     exit 1
 }
 
-Write-Host "[OK] Windows Terminal found" -ForegroundColor Green
+Write-Host "[OK] WezTerm found at: $weztermPath" -ForegroundColor Green
 Write-Host ""
 
 # Check and initialize automation state
@@ -298,31 +314,35 @@ $c2Encoded = [Convert]::ToBase64String($c2Bytes)
 $c3Bytes = [System.Text.Encoding]::Unicode.GetBytes($c3Block)
 $c3Encoded = [Convert]::ToBase64String($c3Bytes)
 
-Write-Host "Launching Windows Terminal with 3 tabs..." -ForegroundColor Cyan
+Write-Host "Launching WezTerm with 3 tabs..." -ForegroundColor Cyan
 Write-Host ""
 
 try {
-    $wtArgs = @(
-        "new-tab", "--title", "C1-Design", "pwsh", "-NoExit", "-NoLogo", "-EncodedCommand", $c1Encoded, ";",
-        "new-tab", "--title", "C2-Main", "pwsh", "-NoExit", "-NoLogo", "-EncodedCommand", $c2Encoded, ";",
-        "new-tab", "--title", "C3-Test", "pwsh", "-NoExit", "-NoLogo", "-EncodedCommand", $c3Encoded
-    )
+    # Launch WezTerm with START_MULTI_TAB.py
+    $pythonCmd = "python"
+    $startScript = Join-Path $PROJECT_DIR "START_MULTI_TAB.py"
     
-    Start-Process -FilePath $wtPath -ArgumentList $wtArgs -ErrorAction Stop
+    if (-not (Test-Path $startScript)) {
+        Write-Host "[ERROR] START_MULTI_TAB.py not found" -ForegroundColor Red
+        exit 1
+    }
     
-    Write-Host "[SUCCESS] Windows Terminal launched with 3 tabs" -ForegroundColor Green
+    Write-Host "[INFO] Executing: python START_MULTI_TAB.py" -ForegroundColor Cyan
+    
+    # Run START_MULTI_TAB.py which will create the tab layout
+    $process = Start-Process -FilePath $pythonCmd -ArgumentList "`"$startScript`"" -PassThru -NoNewWindow
+    
+    Write-Host "[SUCCESS] WezTerm launch initiated" -ForegroundColor Green
     Write-Host ""
     Write-Host "Waiting for tabs to initialize..." -ForegroundColor Cyan
-    Start-Sleep -Seconds 2
+    Start-Sleep -Seconds 3
     
-    # Note: Tab mapping will be created when you run fix-mapping.py
-    Write-Host "[INFO] Tab mapping needs to be initialized" -ForegroundColor Cyan
-    Write-Host "Run this command after all 3 tabs are ready:" -ForegroundColor Yellow
-    Write-Host "  python fix-mapping.py" -ForegroundColor White
+    # The START_MULTI_TAB.py script will create the tab_mapping.json automatically
+    Write-Host "[INFO] Tab mapping should be created automatically" -ForegroundColor Green
     Write-Host ""
 }
 catch {
-    Write-Host "[ERROR] Failed to launch Windows Terminal" -ForegroundColor Red
+    Write-Host "[ERROR] Failed to launch WezTerm" -ForegroundColor Red
     Write-Host "Error: $($_.Exception.Message)" -ForegroundColor Red
 }
 

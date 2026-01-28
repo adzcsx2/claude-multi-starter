@@ -44,42 +44,15 @@ def check_wezterm():
     return False, "WezTerm not working"
 
 
-def spawn_new_tab(wezterm_bin, cwd, instance_id, index, total):
-    """在当前窗口创建一个新窗格并启动 Claude"""
+def spawn_new_tab(wezterm_bin, cwd, instance_id):
+    """在当前窗口创建一个新标签页(tab)并启动 Claude"""
     try:
-        # 根据窗格数量决定分割方向和百分比
-        # 2个窗格: 左右分割 50%
-        # 3个窗格: 先左右50%，再上下50%
-        # 4个窗格: 2x2网格
-        # 5+个窗格: 自适应布局
-
-        if total <= 2:
-            # 左右分割
-            direction = "--right"
-            percent = 50
-        elif total == 3:
-            # 第2个窗格右侧分割，第3个在右侧上下分割
-            if index == 1:
-                direction = "--right"
-                percent = 50
-            else:
-                direction = "--bottom"
-                percent = 50
-        else:
-            # 更多窗格，使用底部分割，每次占用剩余空间的均分
-            direction = "--bottom"
-            # 计算百分比：剩余窗格数的均分
-            remaining = total - index
-            percent = int(100 / (remaining + 1))
-
-        # 使用 split-pane 创建窗格
+        # 使用 spawn 创建新标签页
         cmd = [
             wezterm_bin,
             "cli",
-            "split-pane",
-            direction,
-            "--percent",
-            str(percent),
+            "spawn",
+            "--new-window",  # 在新标签页中创建
             "--cwd",
             str(cwd),
         ]
@@ -94,10 +67,10 @@ def spawn_new_tab(wezterm_bin, cwd, instance_id, index, total):
         if result.returncode == 0:
             # 输出包含新创建的 pane_id
             pane_id = result.stdout.strip()
-            print(f"[DEBUG] Created pane: {pane_id}")
+            print(f"[DEBUG] Created tab with pane: {pane_id}")
 
             if pane_id:
-                # 在新窗格中启动 Claude
+                # 在新标签页中启动 Claude
                 time.sleep(0.5)
                 send_cmd = f"claude --dangerously-skip-permissions"
                 print(f"[DEBUG] Sending to pane {pane_id}: {send_cmd}")
@@ -110,35 +83,22 @@ def spawn_new_tab(wezterm_bin, cwd, instance_id, index, total):
                         "--pane-id",
                         pane_id,
                         "--no-paste",
-                        send_cmd,
+                        send_cmd + "\n",  # 添加换行符自动执行
                     ],
                     capture_output=True,
                     text=True,
                     timeout=5,
                 )
                 print(f"[DEBUG] Send-text return code: {result2.returncode}")
-
-                subprocess.run(
-                    [
-                        wezterm_bin,
-                        "cli",
-                        "send-text",
-                        "--pane-id",
-                        pane_id,
-                        "--no-paste",
-                    ],
-                    input=b"\r",
-                    capture_output=True,
-                    timeout=5,
-                )
+                
                 return pane_id
             return None
         else:
-            print(f"[!] Failed to create pane: {result.stderr}")
+            print(f"[!] Failed to create tab: {result.stderr}")
             return None
 
     except Exception as e:
-        print(f"[!] Exception creating pane: {e}")
+        print(f"[!] Exception creating tab: {e}")
         import traceback
 
         traceback.print_exc()
@@ -208,23 +168,13 @@ def is_in_wezterm():
 
 
 def main():
-    # 检查参数
+    # 检查参数 - 默认使用 c1,c2,c3
     if len(sys.argv) < 2:
-        print("Usage: python START_MULTI_TAB.py ui,coder,test")
-        print()
-        print("This script creates multiple tabs in WezTerm.")
-        print()
-        print("选项 1: 在 WezTerm 中运行 (推荐)")
-        print("  1. 打开 WezTerm")
-        print(f"  2. cd {Path.cwd()}")
-        print(f"  3. python {Path(__file__).name} ui,coder,test")
-        print()
-        print("选项 2: 直接运行 (自动启动 WezTerm)")
-        print(f"  python {Path(__file__).name} ui,coder,test")
-        return 1
-
-    # 解析实例
-    instances_arg = sys.argv[1]
+        print("Using default instances: c1,c2,c3")
+        instances_arg = "c1,c2,c3"
+    else:
+        instances_arg = sys.argv[1]
+    
     instance_ids = [inst.strip() for inst in instances_arg.split(",") if inst.strip()]
 
     print(f"[*] Will create {len(instance_ids)} tabs for: {', '.join(instance_ids)}")
@@ -473,17 +423,17 @@ def main():
         # 为其他实例创建新窗格
         for i, inst_id in enumerate(instance_ids[1:], 1):
             spec = all_instances[inst_id]
-            print(f"[*] Creating pane {i+1} for {inst_id} ({spec.role})...")
+            print(f"[*] Creating tab {i+1} for {inst_id} ({spec.role})...")
 
             pane_id = spawn_new_tab(wezterm_bin, work_dir, inst_id)
 
             if pane_id:
-                print(f"[+] Created pane {i+1}: {inst_id}")
+                print(f"[+] Created tab {i+1}: {inst_id}")
                 set_tab_title(wezterm_bin, pane_id, f"{inst_id} - {spec.role}")
                 instance_tabs[inst_id] = {"pane_id": pane_id, "role": spec.role}
                 time.sleep(0.5)
             else:
-                print(f"[!] Failed to create pane {i+1}")
+                print(f"[!] Failed to create tab {i+1}")
 
         print()
 
