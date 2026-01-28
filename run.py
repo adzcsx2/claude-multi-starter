@@ -1,13 +1,13 @@
 ﻿#!/usr/bin/env python3
 """
-WezTerm 多标签页启动器
-在一个 WezTerm 窗口中创建多个标签页(tabs),每个运行 Claude 实例
+WezTerm Multi-Tab Launcher
+Create multiple tabs in a WezTerm window, each running a Claude instance
 
-用法:
-    python RUN.py
+Usage:
+    python run.py
 
-说明:
-    从 cms.config 读取配置，启动所有 autostart: true 的实例
+Description:
+    Read configuration from cms.config and launch all instances with autostart: true
 """
 
 import sys
@@ -23,7 +23,7 @@ sys.path.insert(0, str(script_dir / "lib"))
 
 
 def _find_wezterm_bin():
-    """查找 WezTerm"""
+    """Find WezTerm binary"""
     import shutil
 
     override = os.environ.get("CODEX_WEZTERM_BIN") or os.environ.get("WEZTERM_BIN")
@@ -33,7 +33,7 @@ def _find_wezterm_bin():
 
 
 def check_wezterm():
-    """检查 WezTerm 是否可用"""
+    """Check if WezTerm is available"""
     wezterm_bin = _find_wezterm_bin()
     if not wezterm_bin:
         return False, "WezTerm not found"
@@ -51,9 +51,9 @@ def check_wezterm():
 
 
 def spawn_new_tab(wezterm_bin, cwd, instance_id, claude_args=""):
-    """在当前窗口创建一个新标签页(tab)并启动 Claude"""
+    """Create a new tab in current window and start Claude"""
     try:
-        # 使用 spawn 创建新标签页（不使用 --new-window）
+        # Use spawn to create new tab (not using --new-window)
         cmd = [
             wezterm_bin,
             "cli",
@@ -70,12 +70,12 @@ def spawn_new_tab(wezterm_bin, cwd, instance_id, claude_args=""):
         print(f"[DEBUG] Stderr: {result.stderr}")
 
         if result.returncode == 0:
-            # 输出包含新创建的 pane_id
+            # Output contains newly created pane_id
             pane_id = result.stdout.strip()
             print(f"[DEBUG] Created tab with pane: {pane_id}")
 
             if pane_id:
-                # 在新标签页中启动 Claude
+                # Start Claude in new tab
                 time.sleep(0.5)
                 send_cmd = f"claude{' ' + claude_args if claude_args else ''}"
                 print(f"[DEBUG] Sending to pane {pane_id}: {send_cmd}")
@@ -87,7 +87,7 @@ def spawn_new_tab(wezterm_bin, cwd, instance_id, claude_args=""):
                         "send-text",
                         "--pane-id",
                         pane_id,
-                        send_cmd + "\r",  # 使用 \r 而不是 \n 确保执行
+                        send_cmd + "\r",  # Use \r instead of \n to ensure execution
                     ],
                     capture_output=True,
                     text=True,
@@ -115,9 +115,9 @@ def spawn_new_tab(wezterm_bin, cwd, instance_id, claude_args=""):
 
 
 def set_tab_title(wezterm_bin, pane_id, title):
-    """设置窗格标题"""
+    """Set pane title"""
     try:
-        # 使用 set-tab-title 设置当前标签页的标题
+        # Use set-tab-title to set current tab's title
         result = subprocess.run(
             [wezterm_bin, "cli", "set-tab-title", "--pane-id", pane_id, title],
             capture_output=True,
@@ -136,7 +136,7 @@ def set_tab_title(wezterm_bin, pane_id, title):
 
 
 def create_tab_mapping(work_dir, instance_tabs):
-    """创建标签页映射文件"""
+    """Create tab mapping file"""
     config_dir = work_dir / ".cms_config"
     config_dir.mkdir(exist_ok=True)
 
@@ -156,7 +156,7 @@ def create_tab_mapping(work_dir, instance_tabs):
 
 
 def is_in_wezterm():
-    """检查是否在 WezTerm 中运行"""
+    """Check if running in WezTerm"""
     # 检查 WezTerm 环境变量
     wezterm_vars = [
         "WEZTERM_PANE",
@@ -177,38 +177,38 @@ def is_in_wezterm():
 
 
 def main():
-    # 加载配置
+    # Load configuration
     from cms_start_config import load_start_config
 
     work_dir = Path.cwd()
     config = load_start_config(work_dir)
     claude_config = config.claude_config
 
-    # 获取需要自动启动的实例
+    # Get instances that need to be auto-started
     autostart_instances = [inst for inst in claude_config.instances if inst.autostart]
 
     if not autostart_instances:
-        print("[!] 没有配置自动启动的实例")
-        print("[!] 请在 cms.config 中设置 autostart: true")
+        print("[!] No instances configured for autostart")
+        print("[!] Please set autostart: true in cms.config")
         return 1
 
     instance_ids = [inst.id for inst in autostart_instances]
-    print(f"[*] 从配置文件读取到 {len(instance_ids)} 个实例:")
+    print(f"[*] Loaded {len(instance_ids)} instances from config:")
     for inst in autostart_instances:
         print(f"    - {inst.id}: {inst.role}")
     print()
 
-    # 从配置读取 Claude 参数
+    # Read Claude parameters from config
     flags = config.data.get("flags", {})
     claude_args_list = flags.get("claudeArgs", [])
     claude_args = " ".join(claude_args_list) if claude_args_list else ""
 
     if claude_args:
-        print(f"[*] Claude 参数: {claude_args}")
-    print(f"[*] 将创建 {len(instance_ids)} 个标签页")
+        print(f"[*] Claude args: {claude_args}")
+    print(f"[*] Will create {len(instance_ids)} tabs")
     print()
 
-    # 创建实例映射
+    # Create instance mapping
     all_instances = {inst.id: inst for inst in autostart_instances}
 
     wezterm_bin = _find_wezterm_bin()
@@ -219,35 +219,35 @@ def main():
     print(f"[+] WezTerm: {wezterm_bin}")
     print()
 
-    # 检查是否在 WezTerm 中
+    # Check if running in WezTerm
     in_wezterm = is_in_wezterm()
 
     if not in_wezterm:
         print("=" * 60)
-        print("  ⚠️  请在 WezTerm 终端中运行此脚本")
+        print("  ⚠️  Please run this script in WezTerm terminal")
         print("=" * 60)
         print()
-        print("此脚本需要在 WezTerm 终端环境中运行才能正常工作。")
+        print("This script needs to run in WezTerm terminal environment to work properly.")
         print()
-        print("步骤:")
-        print("  1. 打开 WezTerm 终端")
-        print(f"  2. 切换到项目目录: cd {work_dir}")
-        print("  3. 运行: python RUN.py")
+        print("Steps:")
+        print("  1. Open WezTerm terminal")
+        print(f"  2. Change to project directory: cd {work_dir}")
+        print("  3. Run: python run.py")
         print()
         print("=" * 60)
         return 1
         print()
-        print("[*] 启动 WezTerm...")
+        print("[*] Starting WezTerm...")
 
         try:
-            # 使用 wezterm start 直接启动带命令的第一个标签页
+            # Use wezterm start to launch first tab with command
             first_instance = instance_ids[0]
             spec = all_instances[first_instance]
 
-            # 构建启动命令
+            # Build startup command
             claude_cmd = f"claude{' ' + claude_args if claude_args else ''}"
 
-            # 启动 WezTerm（简单方式）
+            # Start WezTerm (simple method)
             result = subprocess.Popen(
                 [
                     wezterm_bin,
@@ -257,11 +257,11 @@ def main():
                 ],
             )
 
-            print(f"[+] WezTerm 窗口已启动")
-            print("[*] 等待 WezTerm 初始化...")
-            time.sleep(3)  # 等待 WezTerm 完全启动并准备好 CLI
+            print(f"[+] WezTerm window started")
+            print("[*] Waiting for WezTerm to initialize...")
+            time.sleep(3)  # Wait for WezTerm to fully start and prepare CLI
 
-            # 验证 CLI 是否可用
+            # Verify if CLI is available
             max_retries = 10
             cli_ready = False
             for retry in range(max_retries):
@@ -273,20 +273,20 @@ def main():
                     )
                     if test_result.returncode == 0 and test_result.stdout.strip():
                         cli_ready = True
-                        print("[+] WezTerm CLI 已就绪")
+                        print("[+] WezTerm CLI ready")
                         break
                 except:
                     pass
                 if retry < max_retries - 1:
-                    print(f"[*] 等待 CLI 就绪... ({retry+1}/{max_retries})")
+                    print(f"[*] Waiting for CLI to be ready... ({retry+1}/{max_retries})")
                     time.sleep(1)
 
             if not cli_ready:
-                print("[!] WezTerm CLI 未就绪，无法继续")
-                print("[!] 提示: 请确保在 WezTerm 终端中运行此脚本")
+                print("[!] WezTerm CLI not ready, cannot continue")
+                print("[!] Hint: Please ensure you run this script in WezTerm terminal")
                 return 1
 
-            # 获取第一个窗格的 pane_id
+            # Get first pane's pane_id
             list_result = subprocess.run(
                 [wezterm_bin, "cli", "list", "--format", "json"],
                 capture_output=True,
@@ -308,9 +308,9 @@ def main():
 
             instance_tabs = {}
 
-            # 设置第一个标签页并启动 Claude
+            # Set up first tab and start Claude
             if first_pane_id:
-                # 在第一个 pane 中启动 Claude
+                # Start Claude in first pane
                 claude_cmd = f"claude{' ' + claude_args if claude_args else ''}"
                 subprocess.run(
                     [
@@ -333,15 +333,15 @@ def main():
                     "role": spec.role,
                 }
                 print(
-                    f"[+] 第一个标签页已配置: {first_instance} (pane {first_pane_id})"
+                    f"[+] First tab configured: {first_instance} (pane {first_pane_id})"
                 )
                 time.sleep(1)
 
-            # 为其余实例创建标签页
+            # Create tabs for remaining instances
             for i, inst_id in enumerate(instance_ids[1:], 1):
                 spec = all_instances[inst_id]
                 print(
-                    f"[*] 创建标签页 {i+1}/{len(instance_ids)}: {inst_id} - {spec.role}"
+                    f"[*] Creating tab {i+1}/{len(instance_ids)}: {inst_id} - {spec.role}"
                 )
 
                 pane_id = spawn_new_tab(wezterm_bin, work_dir, inst_id, claude_args)
@@ -353,57 +353,57 @@ def main():
                     }
                     time.sleep(1)
                 else:
-                    print(f"[!] 创建标签页 {inst_id} 失败")
+                    print(f"[!] Failed to create tab for {inst_id}")
 
-            # 保存映射
+            # Save mapping
             if instance_tabs:
                 create_tab_mapping(work_dir, instance_tabs)
 
                 print()
                 print("=" * 60)
-                print("[✓] 所有标签页已创建!")
+                print("[✓] All tabs created!")
                 print("=" * 60)
                 print()
-                print("使用 send 命令进行通信:")
+                print("Use send command to communicate:")
                 print()
                 for inst_id in instance_ids:
                     print(f'  bin\\send {inst_id} "your message"')
                 print()
                 return 0
             else:
-                print("[!] 没有成功创建任何标签页")
+                print("[!] No tabs were successfully created")
                 return 1
 
         except Exception as e:
-            print(f"[!] 错误: {e}")
+            print(f"[!] Error: {e}")
             import traceback
 
             traceback.print_exc()
             return 1
 
     else:
-        # 在 WezTerm 中运行
+        # Running in WezTerm
         print("=" * 60)
-        print("  启动模式: 在当前 WezTerm 窗口中创建标签页")
+        print("  Startup mode: Create tabs in current WezTerm window")
         print("=" * 60)
         print()
-        print("将在当前窗口中:")
-        print(f"  1. 保持当前窗格作为第一个实例 ({instance_ids[0]})")
-        print(f"  2. 创建 {len(instance_ids)-1} 个新标签页")
-        print("  3. 在每个标签页中启动 Claude")
-        print("  4. 设置标签页标题为实例名称")
+        print("In current window:")
+        print(f"  1. Keep current pane as first instance ({instance_ids[0]})")
+        print(f"  2. Create {len(instance_ids)-1} new tabs")
+        print("  3. Start Claude in each tab")
+        print("  4. Set tab titles to instance names")
         print()
-        print("  提示: 使用 Ctrl+Shift+方向键 在窗格间切换")
+        print("  Hint: Use Ctrl+Shift+Arrow keys to switch between panes")
         print()
         print("=" * 60)
         print()
         print("[*] Starting setup...")
         print()
 
-        # 获取当前 pane ID
+        # Get current pane ID
         current_pane_id = os.environ.get("WEZTERM_PANE")
         if not current_pane_id:
-            # 尝试通过 wezterm cli list 获取
+            # Try to get via wezterm cli list
             try:
                 result = subprocess.run(
                     [wezterm_bin, "cli", "list", "--format", "json"],
@@ -424,14 +424,14 @@ def main():
             except:
                 pass
 
-        # 第一个实例在当前窗格
+        # First instance in current pane
         first_instance = instance_ids[0]
         spec = all_instances[first_instance]
 
         print(f"[*] Pane 1 (current): {first_instance} - {spec.role}")
         print(f"[DEBUG] Current pane ID: {current_pane_id}")
 
-        # 在当前窗格启动 Claude
+        # Start Claude in current pane
         print(f"[*] Starting Claude in current pane...")
         claude_cmd = f"claude{' ' + claude_args if claude_args else ''}"
         if current_pane_id:
@@ -447,7 +447,7 @@ def main():
                 capture_output=True,
                 timeout=5,
             )
-            time.sleep(1)  # 等待 Claude 启动
+            time.sleep(1)  # Wait for Claude to start
 
             set_tab_title(
                 wezterm_bin, current_pane_id, f"{first_instance} - {spec.role}"
@@ -464,7 +464,7 @@ def main():
 
         print()
 
-        # 为其他实例创建新窗格
+        # Create new panes for other instances
         for i, inst_id in enumerate(instance_ids[1:], 1):
             spec = all_instances[inst_id]
             print(f"[*] Creating tab {i+1} for {inst_id} ({spec.role})...")
@@ -481,7 +481,7 @@ def main():
 
         print()
 
-        # 保存映射
+        # Save mapping
         create_tab_mapping(work_dir, instance_tabs)
 
         print()
