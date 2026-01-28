@@ -1,25 +1,111 @@
-# Claude Multi Starter - 最小核心版
+# Claude Multi Starter
 
-多实例 Claude CLI 启动和通信工具。在 WezTerm 中同时运行多个独立的 Claude 实例，实现 AI 助手协同工作。
+[中文文档](README_CN.md) | English
 
-## ✨ 核心功能
+Multi-instance Claude CLI launcher and communication tool. Run multiple independent Claude instances simultaneously in WezTerm for AI assistant collaboration.
 
-- 🚀 **多实例启动** - 一键在 WezTerm 标签页中启动多个 Claude 实例
-- 💬 **实例通信** - 使用 `send` 命令在实例间发送消息
-- ⚡️ **灵活配置** - 通过 `cms.config` 自定义实例数量和角色
-- 📍 **自动映射** - 自动保存实例到标签页的映射关系
+## ✨ Core Features
 
-## 🔧 环境要求
+- 🚀 **Multi-Instance Launch** - Start multiple Claude instances in WezTerm tabs with one command
+- 💬 **Instance Communication** - Send messages between instances using the `send` command
+- ⚡️ **Flexible Configuration** - Customize instance count and roles via `cms.config`
+- 📍 **Auto Mapping** - Automatically save instance-to-tab mappings
 
-- **Python 3.8+**
-- **WezTerm** - [下载安装](https://wezfurlong.org/wezterm/installation.html)
-- **Claude CLI** - Anthropic 官方命令行工具
+## 📋 Requirements
 
-## 🚀 快速开始
+- **Python 3.10+** (requires modern type hints support)
+- **WezTerm** - Terminal multiplexer (installation instructions below)
+- **Claude CLI** - Anthropic's official command-line tool
 
-### 1. 配置实例
+### Installing WezTerm
 
-编辑 `cms.config` 定义你需要的实例：
+**Windows:**
+```powershell
+# Using winget
+winget install wez.wezterm
+
+# Or download installer from:
+# https://wezfurlong.org/wezterm/installation.html
+```
+
+**macOS:**
+```bash
+# Using Homebrew
+brew install --cask wezterm
+
+# Or download from:
+# https://wezfurlong.org/wezterm/installation.html
+```
+
+**Linux:**
+```bash
+# Ubuntu/Debian
+curl -fsSL https://apt.fury.io/wez/gpg.key | sudo gpg --dearmor -o /usr/share/keyrings/wezterm-fury.gpg
+echo 'deb [signed-by=/usr/share/keyrings/wezterm-fury.gpg] https://apt.fury.io/wez/ * *' | sudo tee /etc/apt/sources.list.d/wezterm.list
+sudo apt update
+sudo apt install wezterm
+
+# Fedora/RHEL
+sudo dnf copr enable wezfurlong/wezterm
+sudo dnf install wezterm
+
+# Arch Linux
+yay -S wezterm
+```
+
+Verify installation:
+```bash
+wezterm --version
+```
+
+## ⚙️ Environment Setup
+
+### Adding `bin` to PATH
+
+This allows you to run `send` from anywhere without specifying the full path.
+
+**Windows (PowerShell):**
+```powershell
+# Temporary (current session only)
+$env:PATH += ";E:\ai_project\claude-multi-starter\bin"
+
+# Permanent (add to PowerShell profile)
+Add-Content $PROFILE "`n`$env:PATH += ';E:\ai_project\claude-multi-starter\bin'"
+
+# Or use System Environment Variables:
+# 1. Search "Environment Variables" in Start Menu
+# 2. Click "Environment Variables"
+# 3. Edit "Path" under "User variables"
+# 4. Add: E:\ai_project\claude-multi-starter\bin
+```
+
+**macOS/Linux (Bash/Zsh):**
+```bash
+# Add to ~/.bashrc or ~/.zshrc
+echo 'export PATH="$PATH:/path/to/claude-multi-starter/bin"' >> ~/.bashrc
+# or for Zsh
+echo 'export PATH="$PATH:/path/to/claude-multi-starter/bin"' >> ~/.zshrc
+
+# Reload configuration
+source ~/.bashrc  # or source ~/.zshrc
+```
+
+**Verify PATH setup:**
+```bash
+# Windows
+send
+
+# macOS/Linux
+send
+```
+
+You should see the usage message if PATH is configured correctly.
+
+## 🚀 Quick Start
+
+### 1. Configure Instances
+
+Edit `cms.config` to define your instances:
 
 ```json
 {
@@ -40,106 +126,115 @@
 }
 ```
 
-### 2. 启动实例
+### 2. Launch Instances
 
-在 **WezTerm 终端**中运行：
-
+**Run in WezTerm terminal:**
 ```bash
 python RUN.py
 ```
 
-脚本会自动：
+The script will automatically:
+- Read configuration from `cms.config`
+- Launch all instances with `autostart: true`
+- Create multiple WezTerm tabs
+- Start a Claude instance in each tab
+- Save mappings to `.cms_config/tab_mapping.json`
 
-- 从 `cms.config` 读取配置
-- 启动所有 `autostart: true` 的实例
-- 在 WezTerm 中创建多个标签页
-- 每个标签页启动一个 Claude 实例
-- 保存映射关系到 `.cms_config/tab_mapping.json`
+### 3. Send Messages Between Instances
 
-### 3. 实例间通信
-
-在任意实例中使用 `send` 命令向其他实例发送消息：
-
+**Windows:**
 ```cmd
-# Windows
-bin\send default "分配任务给其他实例"
-bin\send ui "设计登录页面"
-bin\send coder "实现用户认证功能"
-bin\send test "测试登录流程"
+# Using absolute path
+python bin\send default "Assign tasks to other instances"
+python bin\send ui "Design the login page"
+python bin\send coder "Implement user authentication"
+python bin\send test "Test the login flow"
 
-# Linux/Mac
-bin/send default "分配任务给其他实例"
-bin/send ui "设计登录页面"
-bin/send coder "实现用户认证功能"
-bin/send test "测试登录流程"
+# If bin is in PATH
+send default "Assign tasks to other instances"
+send ui "Design the login page"
 ```
 
-## 💡 使用示例
+**macOS/Linux:**
+```bash
+# Using absolute path
+python bin/send default "Assign tasks to other instances"
+python bin/send ui "Design the login page"
+python bin/send coder "Implement user authentication"
+python bin/send test "Test the login flow"
 
-### 典型工作流
+# If bin is in PATH
+send default "Assign tasks to other instances"
+send ui "Design the login page"
+```
+
+## 💡 Usage Example
+
+### Typical Workflow
 
 ```bash
-# 1. 在 default 实例分配任务
-bin\send ui "设计一个现代化的仪表板界面"
-bin\send coder "实现数据可视化组件"
-bin\send test "编写单元测试"
+# 1. Assign tasks from default instance
+send ui "Design a modern dashboard interface"
+send coder "Implement data visualization components"
+send test "Write unit tests"
 
-# 2. UI 设计完成后通知开发
-bin\send coder "UI 设计已完成，文件在 /designs 目录"
+# 2. UI design complete, notify developer
+send coder "UI design complete, files in /designs directory"
 
-# 3. 开发完成后通知测试
-bin\send test "功能已实现，请开始测试"
+# 3. Development complete, notify tester
+send test "Feature implemented, please start testing"
 
-# 4. 测试完成后汇报
-bin\send default "所有测试通过，可以发布"
+# 4. Testing complete, report back
+send default "All tests passed, ready for release"
 ```
 
-## 📂 项目结构
+## 📂 Project Structure
 
 ```
 claude-multi-starter/
 ├── .cms_config/
-│   ├── tab_mapping.json        # 标签页映射（自动生成）
-│   └── .claude-*-session       # 各实例会话文件
+│   ├── tab_mapping.json        # Tab mappings (auto-generated)
+│   └── .claude-*-session       # Session files for each instance
 ├── bin/
-│   ├── send                    # 通信命令（Linux/Mac）
-│   └── send.cmd                # 通信命令（Windows）
-├── lib/                        # 核心库文件
-├── cms.config                  # 实例配置文件
-├── RUN.py                      # 启动脚本
-└── README.md                   # 本文档
+│   ├── send                    # Communication script (macOS/Linux)
+│   └── send.cmd                # Communication script (Windows)
+├── lib/                        # Core library files
+├── cms.config                  # Instance configuration
+├── RUN.py                      # Launch script
+├── README.md                   # This document
+└── README_CN.md                # Chinese documentation
 ```
 
-## ⚙️ 配置说明
+## ⚙️ Configuration Options
 
-### 实例配置选项
+### Instance Configuration
 
-- `id` - 实例标识符（用于 send 命令）
-- `role` - 角色描述（提示词）
-- `autostart` - 是否自动启动
+- `id` - Instance identifier (used in send command)
+- `role` - Role description (system prompt)
+- `autostart` - Whether to auto-start this instance
 
-**支持 1-12 个实例**，推荐 3-5 个以获得最佳协作效果。
+**Supports 1-12 instances**, recommend 3-5 for optimal collaboration.
 
-### 自定义实例
+### Custom Instances
 
-根据需求修改 `cms.config`：
+Modify `cms.config` based on your needs:
 
 ```json
 {
   "claude": {
     "instances": [
-      { "id": "architect", "role": "系统架构师", "autostart": true },
-      { "id": "frontend", "role": "前端开发", "autostart": true },
-      { "id": "backend", "role": "后端开发", "autostart": true },
-      { "id": "devops", "role": "运维工程师", "autostart": true }
+      { "id": "architect", "role": "System Architect", "autostart": true },
+      { "id": "frontend", "role": "Frontend Developer", "autostart": true },
+      { "id": "backend", "role": "Backend Developer", "autostart": true },
+      { "id": "devops", "role": "DevOps Engineer", "autostart": true }
     ]
   }
 }
 ```
 
-### 映射文件
+### Mapping File
 
-启动后自动生成 `.cms_config/tab_mapping.json`：
+Auto-generated at `.cms_config/tab_mapping.json`:
 
 ```json
 {
@@ -152,44 +247,64 @@ claude-multi-starter/
 }
 ```
 
-`send` 命令自动读取此文件进行消息路由。
+The `send` command reads this file for message routing.
 
-## 🚨 故障排除
+## 🚨 Troubleshooting
 
-### 启动失败
+### Launch Failure
 
-1. 确认在 **WezTerm** 终端中运行
-2. 检查 Python 版本 >= 3.8：`python --version`
-3. 确认 Claude CLI 已安装：`claude --version`
+1. Confirm running in **WezTerm** terminal
+2. Check Python version >= 3.10: `python --version`
+3. Verify Claude CLI is installed: `claude --version`
 
-### 消息发送失败
+### Message Send Failure
 
-1. 确认映射文件存在：`.cms_config/tab_mapping.json`
-2. 重新启动实例刷新映射
-3. 检查实例 ID 是否正确（区分大小写）
+1. Confirm mapping file exists: `.cms_config/tab_mapping.json`
+2. Restart instances to refresh mappings
+3. Check instance ID is correct (case-sensitive)
 
-### WezTerm 检测失败
+### WezTerm Detection Failure
 
-确保环境变量中有 `wezterm` 命令：
+Ensure `wezterm` is in PATH:
 
 ```bash
 wezterm --version
 ```
 
-## 💡 使用场景
+### Python Version Issues
 
-- **团队协作模拟** - 分配不同角色（前端、后端、测试等）
-- **任务分解** - 将复杂项目拆分给专门的实例
-- **代码审查** - 一个实例写代码，另一个审查
-- **学习辅助** - 一个实例讲解，另一个提问
+If you see syntax errors, upgrade Python:
 
-## 📝 注意事项
+**Windows:**
+```powershell
+winget install Python.Python.3.12
+```
 
-- 必须在 WezTerm 终端中运行
-- 每个实例维护独立的会话文件
-- 映射文件会在每次启动时更新
-- 使用 `Ctrl+C` 可以退出某个实例
+**macOS:**
+```bash
+brew install python@3.12
+```
 
-## 📄 许可证
+**Linux:**
+```bash
+sudo apt install python3.12  # Ubuntu/Debian
+sudo dnf install python3.12  # Fedora
+```
 
-详见 [LICENSE](LICENSE) 文件。
+## 💡 Use Cases
+
+- **Team Collaboration Simulation** - Assign different roles (frontend, backend, testing, etc.)
+- **Task Decomposition** - Break complex projects into specialized instances
+- **Code Review** - One instance writes code, another reviews
+- **Learning Assistant** - One instance explains, another asks questions
+
+## 📝 Notes
+
+- Must run in WezTerm terminal
+- Each instance maintains independent session files
+- Mapping file is updated on each launch
+- Use `Ctrl+C` to exit an instance
+
+## 📄 License
+
+See [LICENSE](LICENSE) file for details.
