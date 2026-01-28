@@ -26,37 +26,58 @@ if not wezterm:
     exit(1)
 
 print(f"[OK] Found WezTerm: {wezterm}")
+print("[INFO] Running wezterm cli list...")
 
 # 获取所有窗格
 try:
+    # 尝试使用当前终端的环境
+    import os
+    env = os.environ.copy()
+    
+    # 使用文本格式（更稳定）
     result = subprocess.run(
-        [wezterm, "cli", "list", "--format", "json"],
+        [wezterm, "cli", "list"],
         capture_output=True,
         text=True,
         encoding='utf-8',
-        errors='ignore',  # 忽略编码错误
-        timeout=5
+        errors='ignore',
+        timeout=5,
+        env=env,
+        cwd=str(project_dir)
     )
+    
+    print(f"[DEBUG] Return code: {result.returncode}")
+    if result.stdout:
+        print(f"[DEBUG] Output lines: {len(result.stdout.split(chr(10)))}")
+    if result.stderr:
+        print(f"[DEBUG] Stderr: {result.stderr[:200]}")
     
     if result.returncode != 0:
         print("[ERROR] Failed to get pane list from WezTerm")
-        if result.stderr:
-            print(f"Error: {result.stderr}")
-        print("\nMake sure WezTerm is running in the SAME window with multiple tabs")
-        print("Current windows must use tabs (Ctrl+Shift+T), not separate processes")
+        print("\n=== Troubleshooting ===")
+        print("1. Make sure you are running this script FROM INSIDE a WezTerm tab")
+        print("2. Try running manually first: wezterm cli list")
+        print("3. If manual command works but script fails, there's an environment issue")
         exit(1)
     
     if not result.stdout:
         print("[ERROR] No output from wezterm cli list")
-        print("This usually means WezTerm windows are separate processes")
-        print("\nSolution: Open ONE WezTerm window, create tabs with Ctrl+Shift+T")
         exit(1)
     
+    # 解析文本格式输出
     panes = []
-    for line in result.stdout.strip().split("\n"):
-        if line.strip():
+    lines = result.stdout.strip().split("\n")
+    
+    for line in lines[1:]:  # 跳过表头
+        if not line.strip():
+            continue
+        
+        # 解析每一行: WINID TABID PANEID WORKSPACE SIZE TITLE
+        parts = line.split()
+        if len(parts) >= 3:
             try:
-                panes.append(json.loads(line))
+                pane_id = int(parts[2])  # PANEID 在第3列
+                panes.append({"pane_id": pane_id})
             except:
                 pass
     
