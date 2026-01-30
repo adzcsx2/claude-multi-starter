@@ -136,7 +136,7 @@ def main():
         pane_id = role_map[instance]
 
     try:
-        # Send message to WezTerm pane via stdin (better encoding support)
+        # Send message to WezTerm pane
         subprocess.run(
             [
                 "wezterm",
@@ -145,14 +145,29 @@ def main():
                 "--pane-id",
                 pane_id,
                 "--no-paste",
+                message,
             ],
-            input=message.encode("utf-8"),
             check=True,
             capture_output=True,
         )
-        # Small delay to ensure text is fully received before sending Enter
-        # This prevents race conditions where Enter is sent before text arrives
-        time.sleep(0.1)
+
+        # For long messages, wait and send empty string to trigger submission
+        if len(message) > 100:
+            time.sleep(2.0)
+            subprocess.run(
+                [
+                    "wezterm",
+                    "cli",
+                    "send-text",
+                    "--pane-id",
+                    pane_id,
+                    "--no-paste",
+                    "",
+                ],
+                check=True,
+                capture_output=True,
+            )
+
         # Send enter
         subprocess.run(
             ["wezterm", "cli", "send-text", "--pane-id", pane_id, "--no-paste"],

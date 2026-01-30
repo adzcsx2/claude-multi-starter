@@ -213,3 +213,21 @@ wezterm --version
 ## 📄 License
 
 See [LICENSE](LICENSE) file for details.
+
+---
+
+## 📦 Version History
+
+### v1.0.1 (2026-01-30)
+
+**Bug Fixes:**
+
+- Fixed message submission reliability issue where text was sent but not automatically submitted
+- Improved handling of long messages (>100 characters) by adding 2-second delay and empty string trigger
+- Optimized message delivery timing to prevent race conditions between text input and Enter key
+
+**Changes:**
+
+- Message sending now uses command-line argument mode for better reliability
+- Added special handling for long text messages to ensure proper submission
+- Enhanced cross-platform compatibility for message submission

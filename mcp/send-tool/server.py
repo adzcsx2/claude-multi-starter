@@ -16,7 +16,7 @@ project_root = server_dir.parent.parent
 send_script = project_root / "send"
 
 PROTOCOL_VERSION = "2024-11-05"
-SERVER_INFO = {"name": "send-tool", "version": "0.1.0"}
+SERVER_INFO = {"name": "send-tool", "version": "1.0.1"}
 
 TOOL_DEFS = [
     {
