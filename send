@@ -15,6 +15,7 @@ import sys
 import json
 import subprocess
 import os
+import time
 from pathlib import Path
 
 script_dir = Path(__file__).resolve().parent
@@ -149,6 +150,9 @@ def main():
             check=True,
             capture_output=True,
         )
+        # Small delay to ensure text is fully received before sending Enter
+        # This prevents race conditions where Enter is sent before text arrives
+        time.sleep(0.1)
         # Send enter
         subprocess.run(
             ["wezterm", "cli", "send-text", "--pane-id", pane_id, "--no-paste"],
