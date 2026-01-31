@@ -10,10 +10,9 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
-# Get project root directory
+# Get the send script from the same directory as this server
 server_dir = Path(__file__).resolve().parent
-project_root = server_dir.parent.parent
-send_script = project_root / "send"
+send_script = server_dir / "send.py"
 
 PROTOCOL_VERSION = "2024-11-05"
 SERVER_INFO = {"name": "send-tool", "version": "1.0.1"}

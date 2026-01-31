@@ -1,0 +1,43 @@
+{
+  "name": "send-tool",
+  "version": "1.0.1",
+  "description": "Send messages between Claude instances via WezTerm panes",
+  "author": "claude-multi-worker",
+  "license": "MIT",
+  "homepage": "https://github.com/yourusername/claude-multi-worker",
+  "repository": "https://github.com/yourusername/claude-multi-worker",
+  "mcpServers": {
+    "send-tool": {
+      "command": "python",
+      "args": ["mcp/send-tool/server.py"],
+      "env": {
+        "PYTHONIOENCODING": "utf-8",
+        "PYTHONUTF8": "1"
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "send_message",
+      "description": "Send a message to another Claude instance and automatically execute it (press Enter). Supports any characters including Chinese, emoji, etc.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "instance": {
+            "type": "string",
+            "description": "Target instance ID (e.g., 'ui', 'coder', 'test', 'default', or c1-c12)"
+          },
+          "message": {
+            "type": "string",
+            "description": "Message content to send. Supports any characters including Chinese, emoji, etc."
+          }
+        },
+        "required": ["instance", "message"]
+      }
+    }
+  ],
+  "requirements": {
+    "wezterm": "Required - WezTerm must be installed and running",
+    "python": ">=3.8"
+  }
+}

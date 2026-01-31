@@ -42,6 +42,7 @@ tmp/
 # Logs
 *.log
 logs/
+mcp/send-tool/debug.log
 
 # IDE and editors
 .vscode/
