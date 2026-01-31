@@ -18,7 +18,8 @@
 ## ✨ 核心功能
 
 - 🚀 **多实例启动** - 一键在 WezTerm 标签页中启动多个 Claude 实例
-- 💬 **实例通信** - 使用 `send` 命令在实例间发送消息
+- 💬 **实例通信** - 使用 MCP 工具在实例间发送消息
+- 🌐 **完整 Unicode 支持** - 完美支持中文、emoji 和所有国际字符
 - ⚡️ **灵活配置** - 通过 `cmw.config` 自定义实例数量和角色
 - 📍 **自动映射** - 自动保存实例到标签页的映射关系
 
@@ -63,32 +64,18 @@ python run.py
 
 ### 3. 实例间通信
 
-**方法一：命令行方式**
-
-```bash
-python send default "分配任务给其他实例"
-python send ui "设计登录页面"
-python send coder "实现用户认证功能"
-python send test "测试登录流程"
-```
-
-**方法二：MCP 工具（在 Claude 实例内部）**
-
-运行 `python run.py` 后，MCP 服务器会自动配置。您可以直接让 Claude 发送消息：
+运行 `python run.py` 后，MCP 服务器会自动配置。您可以直接向其他实例发送消息：
 
 ```
-# 在任何 Claude 实例中，直接说：
-"给 ui 发送消息：设计登录页面"
-"让 coder 实现用户认证功能"
-"让 test 验证登录流程"
+send ui "设计登录页面"
+send coder "实现用户认证功能"
+send test "验证登录流程"
 ```
 
-Claude 会自动使用 `send_message` 工具与其他实例通信。
-
-**注意**：
-
+**特性：**
+- 完整 Unicode 支持（中文、emoji 和所有国际字符完美支持）
+- 简洁语法：`send <实例> "<消息>"`
 - MCP 服务器配置会在每次运行 `python run.py` 时自动更新
-- **已知限制**：由于 Claude CLI 的编码问题，MCP 工具目前对中文等非 ASCII 字符支持不佳。如需发送中文消息，请使用命令行方式：`python send <实例名> "中文消息"`
 
 ## 💡 使用示例
 
@@ -96,18 +83,18 @@ Claude 会自动使用 `send_message` 工具与其他实例通信。
 
 ```
 # 1. 在 default 实例中分配任务：
-"给 ui 发送消息：设计一个现代化的仪表板界面"
-"让 coder 实现数据可视化组件"
-"让 test 编写单元测试"
+send ui "设计一个现代化的仪表板界面"
+send coder "实现数据可视化组件"
+send test "编写单元测试"
 
 # 2. 在 ui 实例中，设计完成后：
-"告诉 coder：UI 设计已完成，文件在 /designs 目录"
+send coder "UI 设计已完成，文件在 /designs 目录"
 
 # 3. 在 coder 实例中，开发完成后：
-"告诉 test：功能已实现，请开始测试"
+send test "功能已实现，请开始测试"
 
 # 4. 在 test 实例中，测试完成后：
-"向 default 汇报：所有测试通过，可以发布"
+send default "所有测试通过，可以发布"
 ```
 
 ## 📂 项目结构
@@ -118,9 +105,14 @@ claude-multi-worker/
 │   ├── tab_mapping.json        # 标签页映射（自动生成）
 │   └── .claude-*-session       # 各实例会话文件
 ├── lib/                        # 核心库文件
+├── mcp/
+│   └── send-tool/
+│       ├── server.py           # MCP 服务器
+│       ├── send.py             # 发送脚本（集成）
+│       ├── server.json         # MCP 元数据
+│       └── README.md           # MCP 文档
 ├── cmw.config                  # 实例配置文件
 ├── run.py                      # 启动脚本
-├── send                        # 通信脚本
 ├── README.md                   # 英文文档
 └── README_CN.md                # 中文文档
 ```
@@ -169,7 +161,7 @@ claude-multi-worker/
 }
 ```
 
-`send` 命令从此文件读取 pane ID 来将消息路由到特定标签页。
+MCP `send_message` 工具从此文件读取 pane ID 来将消息路由到特定标签页。
 
 ## 🚨 故障排除
 
@@ -203,12 +195,12 @@ wezterm --version
 ## 📝 注意事项
 
 - 必须在 WezTerm 终端中运行 `python run.py`
-- 使用 `python send <实例> "消息"` 进行通信
+- 使用 `send <实例> "<消息>"` 进行通信
 - 每个标签页包含一个 Claude 实例，具有独特的 pane ID
 - 每个实例维护独立的会话文件
 - 映射文件在每次启动时自动生成
 - 使用 `Ctrl+C` 可以退出某个实例
-- 支持 c1-c12 简写：`python send c1 "消息"`
+- 支持 c1-c12 简写：`send c1 "消息"`
 
 ## 📄 许可证
 

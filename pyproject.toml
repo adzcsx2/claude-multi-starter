@@ -1,0 +1,38 @@
+[project]
+name = "claude-multi-worker"
+version = "1.0.1"
+description = "Multi-instance Claude CLI launcher and communication tool"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "adzcsx2"}
+]
+keywords = ["claude", "cli", "wezterm", "mcp", "multi-instance"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+[project.urls]
+Homepage = "https://github.com/adzcsx2/claude-multi-worker"
+Repository = "https://github.com/adzcsx2/claude-multi-worker"
+Issues = "https://github.com/adzcsx2/claude-multi-worker/issues"
+
+[project.scripts]
+cmw = "run:main"
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = []
+
+[tool.setuptools.package-data]
+"*" = ["*.json", "*.md", "*.config"]

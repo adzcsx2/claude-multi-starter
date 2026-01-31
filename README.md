@@ -18,7 +18,8 @@ Before using this tool, ensure you have:
 ## ✨ Core Features
 
 - 🚀 **Multi-Instance Launch** - Start multiple Claude instances in WezTerm tabs with one command
-- 💬 **Instance Communication** - Send messages between instances using the `send` command
+- 💬 **Instance Communication** - Send messages between instances using MCP tools or command line
+- 🌐 **Unicode Support** - Full support for Chinese, emoji, and all international characters
 - ⚡️ **Flexible Configuration** - Customize instance count and roles via `cmw.config`
 - 📍 **Auto Mapping** - Automatically save instance-to-tab mappings
 
@@ -63,32 +64,18 @@ The script will automatically:
 
 ### 3. Send Messages Between Instances
 
-**Method 1: Command Line**
-
-```bash
-python send default "Assign tasks to other instances"
-python send ui "Design the login page"
-python send coder "Implement user authentication"
-python send test "Test the login flow"
-```
-
-**Method 2: MCP Tool (Inside Claude Instances)**
-
-After running `python run.py`, the MCP server is automatically configured. You can directly ask Claude to send messages:
+After running `python run.py`, the MCP server is automatically configured. You can send messages to other instances directly from Claude:
 
 ```
-# In any Claude instance, just say:
-"Send a message to ui: Design the login page"
-"Tell coder to implement user authentication"
-"Ask test to verify the login flow"
+send ui "Design the login page"
+send coder "Implement user authentication"
+send test "Verify the login flow"
 ```
 
-Claude will automatically use the `send_message` tool to communicate with other instances.
-
-**Note:**
-
+**Features:**
+- Full Unicode support (Chinese, emoji, and all international characters work perfectly)
+- Simple syntax: `send <instance> "<message>"`
 - The MCP server configuration is automatically updated each time you run `python run.py`
-- **Known Limitation**: MCP tool currently has encoding issues with non-ASCII characters (Chinese, etc.) due to Claude CLI limitations. For non-English messages, use the command line method instead: `python send <instance> "中文消息"`
 
 ## 💡 Usage Example
 
@@ -96,18 +83,18 @@ Claude will automatically use the `send_message` tool to communicate with other 
 
 ```
 # 1. In default instance, assign tasks:
-"Send a message to ui: Design a modern dashboard interface"
-"Tell coder to implement data visualization components"
-"Ask test to write unit tests"
+send ui "Design a modern dashboard interface"
+send coder "Implement data visualization components"
+send test "Write unit tests"
 
 # 2. In ui instance, after design complete:
-"Tell coder: UI design complete, files in /designs directory"
+send coder "UI design complete, files in /designs directory"
 
 # 3. In coder instance, after development complete:
-"Tell test: Feature implemented, please start testing"
+send test "Feature implemented, please start testing"
 
 # 4. In test instance, after testing complete:
-"Report to default: All tests passed, ready for release"
+send default "All tests passed, ready for release"
 ```
 
 ## 📂 Project Structure
@@ -118,9 +105,14 @@ claude-multi-worker/
 │   ├── tab_mapping.json        # Tab mappings (auto-generated)
 │   └── .claude-*-session       # Session files for each instance
 ├── lib/                        # Core library files
+├── mcp/
+│   └── send-tool/
+│       ├── server.py           # MCP server
+│       ├── send.py             # Send script (integrated)
+│       ├── server.json         # MCP metadata
+│       └── README.md           # MCP documentation
 ├── cmw.config                  # Instance configuration
 ├── run.py                      # Launch script
-├── send                        # Communication script
 ├── README.md                   # This document
 └── README_CN.md                # Chinese documentation
 ```
@@ -169,7 +161,7 @@ Auto-generated at `.cmw_config/tab_mapping.json`:
 }
 ```
 
-The `send` command reads pane IDs from this file to route messages to specific tabs.
+The MCP `send_message` tool reads pane IDs from this file to route messages to specific tabs.
 
 ## 🚨 Troubleshooting
 
@@ -203,12 +195,12 @@ wezterm --version
 ## 📝 Notes
 
 - Must run `python run.py` in WezTerm terminal
-- Use `python send <instance> "message"` for communication
+- Use `send <instance> "<message>"` for communication
 - Each tab contains one Claude instance with a unique pane ID
 - Each instance maintains independent session files
 - Mapping file is auto-generated on each launch
 - Use `Ctrl+C` to exit an instance
-- Supports c1-c12 shorthand: `python send c1 "message"`
+- Supports c1-c12 shorthand: `send c1 "message"`
 
 ## 📄 License
 

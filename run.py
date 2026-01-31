@@ -21,6 +21,15 @@ from pathlib import Path
 script_dir = Path(__file__).resolve().parent
 sys.path.insert(0, str(script_dir / "lib"))
 
+# Verbose mode for debugging (set via environment variable)
+VERBOSE = os.environ.get("CMW_VERBOSE", "0") == "1"
+
+
+def debug_print(msg: str) -> None:
+    """Print debug message if verbose mode is enabled"""
+    if VERBOSE:
+        print(f"[DEBUG] {msg}")
+
 
 def configure_mcp_server(project_root: Path) -> bool:
     """Configure MCP server in project .claude/config.json"""
@@ -89,23 +98,23 @@ def spawn_new_tab(wezterm_bin, cwd, instance_id, claude_args=""):
             str(cwd),
         ]
 
-        print(f"[DEBUG] Running: {' '.join(cmd)}")
+        debug_print(f"Running: {' '.join(cmd)}")
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
 
-        print(f"[DEBUG] Return code: {result.returncode}")
-        print(f"[DEBUG] Stdout: {result.stdout}")
-        print(f"[DEBUG] Stderr: {result.stderr}")
+        debug_print(f"Return code: {result.returncode}")
+        debug_print(f"Stdout: {result.stdout}")
+        debug_print(f"Stderr: {result.stderr}")
 
         if result.returncode == 0:
             # Output contains newly created pane_id
             pane_id = result.stdout.strip()
-            print(f"[DEBUG] Created tab with pane: {pane_id}")
+            debug_print(f"Created tab with pane: {pane_id}")
 
             if pane_id:
                 # Start Claude in new tab
                 time.sleep(0.5)
                 send_cmd = f"claude{' ' + claude_args if claude_args else ''}"
-                print(f"[DEBUG] Sending to pane {pane_id}: {send_cmd}")
+                debug_print(f"Sending to pane {pane_id}: {send_cmd}")
 
                 result2 = subprocess.run(
                     [
@@ -120,8 +129,8 @@ def spawn_new_tab(wezterm_bin, cwd, instance_id, claude_args=""):
                     text=True,
                     timeout=5,
                 )
-                print(f"[DEBUG] Send-text return code: {result2.returncode}")
-                print(f"[DEBUG] Send-text stderr: {result2.stderr}")
+                debug_print(f"Send-text return code: {result2.returncode}")
+                debug_print(f"Send-text stderr: {result2.stderr}")
 
                 return pane_id
             return None
@@ -132,11 +141,6 @@ def spawn_new_tab(wezterm_bin, cwd, instance_id, claude_args=""):
     except Exception as e:
         print(f"[!] Exception creating tab: {e}")
         import traceback
-
-        traceback.print_exc()
-        return None
-        import traceback
-
         traceback.print_exc()
         return None
 
