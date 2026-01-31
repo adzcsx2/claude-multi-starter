@@ -57,6 +57,7 @@ python run.py
 The script will automatically:
 
 - Read configuration from `cmw.config`
+- **Configure MCP server** for inter-instance communication
 - Launch all instances with `autostart: true`
 - Create multiple WezTerm tabs
 - Start a Claude instance in each tab
@@ -209,6 +210,28 @@ See [LICENSE](LICENSE) file for details.
 ---
 
 ## 📦 Version History
+
+### v1.0.2 (2026-02-01)
+
+**Documentation:**
+
+- Updated README with simplified `send <instance> "<message>"` syntax
+- Added clarification about automatic MCP server configuration
+- Removed outdated command-line examples
+- Removed known limitation about Chinese character support (now fully fixed)
+- Updated project structure to reflect `mcp/send-tool/` directory
+
+**Code Improvements:**
+
+- Added `CMW_VERBOSE` environment variable for debug output control
+- Replaced hardcoded DEBUG prints with `debug_print()` function
+- Removed duplicate exception handling code
+- Added `pyproject.toml` for proper package management
+- Moved `send` script into `mcp/send-tool/` for self-contained MCP package
+
+**Features:**
+
+- MCP server now fully self-contained and ready for registry publication
 
 ### v1.0.1 (2026-01-30)
 

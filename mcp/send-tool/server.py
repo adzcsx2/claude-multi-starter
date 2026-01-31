@@ -15,7 +15,7 @@ server_dir = Path(__file__).resolve().parent
 send_script = server_dir / "send.py"
 
 PROTOCOL_VERSION = "2024-11-05"
-SERVER_INFO = {"name": "send-tool", "version": "1.0.1"}
+SERVER_INFO = {"name": "send-tool", "version": "1.0.2"}
 
 TOOL_DEFS = [
     {
